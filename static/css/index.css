@@ -1,0 +1,180 @@
+body {
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    min-width: 100vw;
+    font-family: "Fira Sans", sans-serif;
+    font-weight: 400;
+    font-style: normal;
+}
+
+.logo {
+    width: 300px;
+    height: 300px;
+}
+
+.title {
+    font-size: 54pt;
+    color: #333;
+    margin-top: 20px;
+    margin-bottom: 10px;
+    text-align: center;
+    font-family: "Righteous", sans-serif;
+    font-weight: 400;
+    font-style: normal;
+}
+
+.container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+}
+
+.btn{
+    border: none;
+    color: white;
+    background-color: #64ce67;
+    width: 180px;
+    height: 40px;
+    text-align: center;
+    font-size: 16px;
+    cursor: pointer;
+    margin: 5px auto;
+    border-radius: 15px;
+    transition: scale 0.5s ease;
+}
+
+.control-buttons-containter {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn:hover {
+    scale: 1.1;
+}
+
+#new-project-btn {
+    background-color: #64ce67;
+}
+
+#open-project-btn {
+    background-color: #58acf1;
+}
+
+.upload-modal-section {
+    margin-top: 25px;
+    width: 100%;
+}
+
+#upload-modal input[type="file"] {
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
+
+#upload-modal input[type="text"] {
+    width: 95%;
+    padding: 10px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    margin-top: 10px;
+    margin-bottom: 5px;
+    font-size: 14px;
+    color: #333;
+    background-color: #f9f9f9;
+    appearance: none; /* Убирает стандартный стиль браузера */
+    display: block;
+}
+
+#open-modal select {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    background-color: #f9f9f9;
+    font-size: 16px;
+    color: #333;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    margin-top: 15px;
+    margin-bottom: 15px;
+    appearance: none; /* Убирает стандартный стиль браузера */
+}
+
+.footer {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    text-align: center;
+    padding: 10px;
+    font-size: 14pt;
+    color: #333;
+    font-family: 'Courier New', Courier, monospace;
+}
+
+/* Modal window styles */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 999;
+    transition: opacity 0.3s ease, background-color 0.3s ease;
+    opacity: 0;
+}
+
+.modal-overlay.active {
+    background-color: rgba(145, 145, 145, 0.4);
+    opacity: 1;
+    backdrop-filter: blur(4px);
+}
+
+.modal {
+    background-color: rgba(255, 255, 255, 0.9);
+    padding: 30px;
+    border-radius: 15px;
+    box-shadow: 0 10px 30px rgba(145, 145, 145, 0.25);
+    max-width: 450px;
+    width: 90%;
+    position: relative;
+
+    transform: translateY(-20px) scale(0.96);
+    opacity: 0;
+    transition: transform 0.3s ease, opacity 0.3s ease;
+}
+
+.modal-overlay.active .modal {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+}
+
+.modal .close-btn {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: none;
+    border: none;
+    border-radius: 50%;
+    font-size: 20px;
+    cursor: pointer;
+    background-color: #ee4731;
+    color: white;
+    transition: background-color 0.3s ease;
+}
+
+.modal .close-btn:hover {
+    background-color: #f07b6b;
+}

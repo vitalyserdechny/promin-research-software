@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PROMIN - an open-source utility for computer vision research</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Ponomar&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Fira+Sans:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Ponomar&display=swap"
+        rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Audiowide&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../static/css/frames-operations.css">
+    <link rel="icon" href="../static/images/favicon_new.ico" type="image/x-icon">
+</head>
+
+<body>
+    <div id="color-picker-container" style="position: absolute; display: none;"></div>
+
+    <div id="loading-panel" class="loading-panel">
+        <div class="loading-spinner"></div>
+        <p>Loading...</p>
+    </div>
+
+    <header>
+        <nav class="navbar">
+            <ul class="nav-menu">
+                <li class="nav-item dropdown">
+                    <a href="#">Project ▾</a>
+                    <ul class="dropdown-menu">
+                        <li><a href="#" id="save-project-btn">💾 Save</a></li>
+                        <li><a href="#" id="close-project-btn">🔴 Close</a></li>
+                    </ul>
+                </li>
+                <li class="nav-item dropdown">
+                    <a href="#">Analysis ▾</a>
+                    <ul class="dropdown-menu">
+                        <li><a href="#" id="models-analysis-btn">📈 New Analysis</a></li>
+                        <li><a href="#" id="get-reports-btn">📋 Reports</a></li>
+                    </ul>
+                </li>
+                <li class="nav-item"><a href="#" id="enter_playground_btn">Playground</a></li>
+                <li class="nav-item"><a href="#" id="cuda_status_btn">CUDA status</a></li>
+                <li class="nav-item"><a href="#">Help</a></li>
+            </ul>
+        </nav>
+        <h3 id="unsaved-data-warning-msg">⚠️ Unsaved changes</h3>
+    </header>
+    <main>
+        <div class="frame-viewer" id="frame-viewer">
+            <div class="frame-viewer-header">
+                <h2>Frame #<span id="frame-number">4</span></h2>
+                <button id="compare-frame-with-models">Compare</button>
+            </div>
+            <div class="image-container" id="image-container">
+                <img src="" alt="Frame Image" id="frame-image">
+                <div id="bounding-boxes"></div> <!-- Сюда будем добавлять рамки -->
+            </div>
+        </div>
+        <div id="bounding-boxes-list">
+            <div id="bounding-boxes-list-control-container">
+                <h3>Bounding boxes:</h3>
+                <div id="bounding-boxes-list-control-buttons">
+                    <button id="add-bounding-box-btn" class="add-bounding-box-btn">Add ❇️</button>
+                    <button id="paste-bounding-box-btn" class="paste-bounding-box-btn-inactive">Paste 📋</button>
+                </div>
+            </div>
+            <div id="bounding-boxes-values"></div>
+        </div>
+        <div class="classes-and-colors" id="classes-and-colors">
+            <h3>Classes:</h3>
+            <div id="classes-and-colors-list"></div>
+        </div>
+    </main>
+    <footer>
+        <div class="frames-container">
+            <div class="frames-list"></div>
+            <div class="pages-control">
+                <button id="prev-page" class="prev-page">⬅</button>
+                <span id="pages-counter">1/1</span>
+                <button id="next-page" class="next-page">➡</button>
+            </div>
+        </div>
+    </footer>
+
+    <div id="playground-panel" class="playground-panel">
+        <div id="playground-panel-header" class="playground-panel-header">
+            <h2>Playground 🎮</h2>
+            <button id="close-playground-panel-btn" class="close-playground-panel-btn">❌</button>
+        </div>
+        <div id="playground-panel-content" class="playground-panel-content">
+            <div class="image-container" id="playground-image-container">
+                <div class="playground-image-container-section">
+                    <img src="" alt="Frame Image" id="playground-frame-image">
+                    <div id="playground-bounding-boxes"></div>
+                </div>
+                <div class="playground-image-container-section">
+                    <pre id="playground-log-output" class="playground-log-output"></pre>
+                </div>
+            </div>
+            <div class="playground-methods" id="playground-methods">
+                <div class="playground-methods-section">
+                    <input type="text" id="playground-command-input" placeholder="Например: preproc median k=5"
+                        style="width: 100%; padding: 8px; margin-bottom: 8px;">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="select-report-panel" class="select-report-panel">
+        <div id="select-report-panel-header" class="select-report-panel-header">
+            <h2>Select Report 📈</h2>
+            <button id="close-select-report-panel-btn" class="close-select-report-panel-btn">❌</button>
+        </div>
+        <div id="select-report-panel-content" class="select-report-panel-content">
+            <select id="report-selector"></select>
+            <button id="select-report-btn" class="run-analysis-btn">View Report 👀</button>
+        </div>
+    </div>
+
+    <div id="view-report-panel" class="view-report-panel">
+        <div id="view-report-panel-header" class="view-report-panel-header">
+            <h2>View Report 📈</h2>
+            <button id="close-view-report-panel-btn" class="close-view-report-panel-btn">❌</button>
+        </div>
+        <div id="view-report-panel-content" class="view-report-panel-content">
+        </div>
+    </div>
+
+    <div id="compare-frames-panel" class="compare-frames-panel">
+        <div id="compare-frames-panel-header" class="compare-frames-panel-header">
+            <h2>Compare ⚖️</h2>
+            <button id="close-compare-frames-panel-btn" class="close-compare-frames-panel-btn">❌</button>
+        </div>
+    </div>
+
+    <div id="analysis-panel" class="analysis-panel">
+        <div id="analysis-panel-header" class="analysis-panel-header">
+            <h2>New Analysis 📈</h2>
+            <button id="close-analysis-panel-btn" class="close-analysis-panel-btn">❌</button>
+        </div>
+        <div id="analysis-panel-content" class="analysis-panel-content">
+            <h3 class="outside-div-elems">Models 🤖:</h3>
+            <label class="outside-div-elems"><input class="outside-div-elems" type="checkbox" name="select_all_models" value="select_all"
+                    id="select_all_models">Select All</label><br>
+            <div id="model-selection">
+                <div>
+                    <label><input type="checkbox" name="model" value="yolo_11_x"> YOLOv11(x)</label><br>
+                    <label><input type="checkbox" name="model" value="yolo_11_s"> YOLOv11(s)</label><br>
+                    <label><input type="checkbox" name="model" value="yolo_11_n"> YOLOv11(n)</label><br>
+                    <label><input type="checkbox" name="model" value="yolo_11_m"> YOLOv11(m)</label><br>
+                    <label><input type="checkbox" name="model" value="yolo_11_l"> YOLOv11(l)</label><br>
+                </div>
+                <div>
+                    <label><input type="checkbox" name="model" value="yolo_10_n"> YOLOv10(n)</label><br>
+                    <label><input type="checkbox" name="model" value="yolo_10_s"> YOLOv10(s)</label><br>
+                    <label><input type="checkbox" name="model" value="yolo_10_m"> YOLOv10(m)</label><br>
+                    <label><input type="checkbox" name="model" value="yolo_10_b"> YOLOv10(b)</label><br>
+                    <label><input type="checkbox" name="model" value="yolo_10_l"> YOLOv10(l)</label><br>
+                    <label><input type="checkbox" name="model" value="yolo_10_x"> YOLOv10(x)</label><br>
+                </div>
+                <div>
+                    <label><input type="checkbox" name="model" value="yolo_9_t"> YOLOv9(t)</label><br>
+                    <label><input type="checkbox" name="model" value="yolo_9_s"> YOLOv9(s)</label><br>
+                    <label><input type="checkbox" name="model" value="yolo_9_m"> YOLOv9(m)</label><br>
+                    <label><input type="checkbox" name="model" value="yolo_9_c"> YOLOv9(c)</label><br>
+                    <label><input type="checkbox" name="model" value="yolo_9_e"> YOLOv9(e)</label><br>
+
+                </div>
+                <div>
+                    <label><input type="checkbox" name="model" value="yolo_8_n"> YOLOv8(n)</label><br>
+                    <label><input type="checkbox" name="model" value="yolo_8_s"> YOLOv8(s)</label><br>
+                    <label><input type="checkbox" name="model" value="yolo_8_m"> YOLOv8(m)</label><br>
+                    <label><input type="checkbox" name="model" value="yolo_8_l"> YOLOv8(l)</label><br>
+                    <label><input type="checkbox" name="model" value="yolo_8_x"> YOLOv8(x)</label><br>
+                </div>
+                <div>
+                    <label><input type="checkbox" name="model" value="faster_rcnn"> Faster R-CNN</label><br>
+                    <label><input type="checkbox" name="model" value="mask_rcnn"> Mask R-CNN</label><br>
+                    <label><input type="checkbox" name="model" value="ssd"> SSD</label><br>
+                    <label><input type="checkbox" name="model" value="detr"> DETR</label><br>
+                    <label><input type="checkbox" name="model" value="retina_net">RetinaNet</label><br>
+                </div>
+            </div>
+            <div id="preproc-selection">
+                <h3>Preprocessing pipeline 🛠️:</h3>
+                <label for="preproc-file-input">Upload preprocessing pipeline (.txt):</label><br>
+                <input type="file" id="preproc-file-input" accept=".txt"><br><br>
+                <textarea id="preproc-textarea" rows="6" cols="60" placeholder="Pipeline will appear here..." readonly></textarea>
+            </div>
+            <button id="run-analysis-btn" class="run-analysis-btn">Start Analysis ▶️</button>
+            <div id="analysis-process">
+                <h3 id="analysis-welcome-text">While the analysis is running, grab a beer, buddy 🥴🍻</h3>
+                <dotlottie-player id="analysis-loader"
+                    src="https://lottie.host/daa85c4f-630f-4c0b-8e7c-318f4ff57144/oNaOJbftGi.lottie"
+                    background="transparent" speed="1" style="width: 300px; height: 300px" loop
+                    autoplay></dotlottie-player>
+                <h2 id="analysis-step"></h2>
+                <h3 id="analysis-message-text"></h3>
+                <audio id="bg-analysis-music" loop style="display: none;">
+                    <source src="{{ url_for('static', filename='audio/analysis_audio.mp3') }}" type="audio/mpeg">
+                </audio>
+            </div>
+            <div id="analysis-done-div">
+                <h1>✅</h1>
+                <h2>Analysis done!</h2>
+                <button id="analysis-done-btn">OK!</button>
+            </div>
+            <div id="results-div"></div>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/@dotlottie/player-component@2.7.12/dist/dotlottie-player.mjs" type="module"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.socket.io/4.0.1/socket.io.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@jaames/iro@5"></script>
+
+    <script src="../static/js/utils.js"></script>
+    <script src="../static/js/frames-operations.js"></script>
+    <script src="../static/js/reports.js"></script>
+    <script src="../static/js/playground.js"></script>
+    <script src="../static/js/analysis.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PROMIN - an open-source utility for computer vision research</title>
+    <link rel="stylesheet" href="../static/css/index.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Righteous&display=swap" rel="stylesheet">
+    <link rel="icon" href="../static/images/favicon_new.ico" type="image/x-icon">
+</head>
+
+<body>
+    <div class="container">
+        <img src="../static/images/logo_new_1.png" alt="logo" class="logo">
+        <h1 class="title">PROMIN</h1>
+        <div class="control-buttons-containter">
+            <button id="new-project-btn" class="btn">New Project</button>
+            <button id="open-project-btn" class="btn">Open Project</button>
+        </div>
+    </div>
+
+    <div id="upload-modal" class="modal-overlay">
+        <div class="modal">
+            <button class="close-btn">×</button>
+            <form action="/upload" method="post" enctype="multipart/form-data">
+                <div class="upload-modal-section">
+                    <label for="project-name">Enter project name:</label>
+                    <input type="text" name="project_name" id="project-name" placeholder="Project Name" required>
+                </div>
+                <div class="upload-modal-section">
+                    <input type="checkbox" name="annotate_frames" id="annotate-frames" checked>
+                    <label for="annotate-frames">Annotate frames with YOLOv11</label>
+                </div>
+                <div class="upload-modal-section">
+                    <label for="video" style="margin-top: 15px;">Choose a video to upload:</label>
+                    <input type="file" name="video" id="video" accept="video/*" style="display: block;" required>      
+                </div>
+                <div class="upload-modal-section" style="text-align: center;">
+                    <button type="submit" class="btn">Create Project</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="open-modal" class="modal-overlay">
+        <div class="modal">
+            <button class="close-btn">×</button>
+            <form action="/open" method="get">
+                <label for="project" id="project-select-label">Choose project to open:</label>
+                <select name="project_name" id="projects-select" required>
+                </select>
+                <button type="submit" id="open-project-submit-btn" class="btn">Open Project</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="footer">
+        <p>© 2025 PROMIN - an open-source utility for computer vision research</p>
+    </div>
+
+    <script src="../static/js/index.js"></script>
+</body>
+
+</html>
