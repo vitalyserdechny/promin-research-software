@@ -13,61 +13,148 @@
  * Автор: Сердечный Виталий ♥️
  */
 
+// Вывод строки в лог (имитация консоли)
+function appendToPlaygroundLog(message, skip_selector_char = false) {
+    const log = document.getElementById('playground-log-output');
+    if (!skip_selector_char) {
+        log.textContent += "> " + message + '\n';
+    }
+    else {
+        log.textContent += message + '\n';
+    }
+    log.scrollTop = log.scrollHeight;
+}
+
+// Очистка лога
+function clearPlaygroundLog() {
+    const log = document.getElementById('playground-log-output');
+    log.textContent = "";
+}
+
+// Сброс аннотаций в Playground (все bounding box'ы удаляются)
+function resetPlaygroundAnnotations() {
+    const overlay = document.getElementById('playground-bounding-boxes');
+    overlay.innerHTML = '';
+    appendToPlaygroundLog('✅ All annotations removed!');
+}
+
+// Функция для аннотирования текущего кадра с помощью выбранной модели
+function playgroundAnnotate(model, confidence) {
+    const img = document.getElementById('playground-frame-image');
+    
+    fetch(`/annotate-playground-frame?frame_index=${window.currentFrameIndex}&model=${model}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success' && data.annotations && data.time) {
+
+                const filteredAnnotations = data.annotations.filter(annotation => {
+                    const parts = annotation.trim().split(' ');
+                    const conf = parseFloat(parts[parts.length - 1]);
+                    return conf >= confidence;
+                });
+
+                appendToPlaygroundLog(`✅ Annotated with ${model} model\ntime: ${data.time} s\nconfidence: ${confidence}`);
+                appendToPlaygroundLog("Bounding boxes:", skip_selector_char = true)
+                filteredAnnotations.forEach(ann => {
+                    appendToPlaygroundLog(ann, skip_selector_char = true)
+                });
+
+                const overlay = document.getElementById('playground-bounding-boxes');
+                const container = document.getElementById('playground-image-container');
+
+                overlay.innerHTML = '';
+
+                const imgRect = img.getBoundingClientRect();
+                const containerRect = container.getBoundingClientRect();
+
+                const offsetX = imgRect.left - containerRect.left;
+                const offsetY = imgRect.top - containerRect.top;
+
+                const imgWidth = img.clientWidth;
+                const imgHeight = img.clientHeight;
+
+                filteredAnnotations.forEach(annotation => {
+                    const parts = annotation.trim().split(' ');
+
+                    const conf = parts.pop();
+                    const height = parts.pop();
+                    const width = parts.pop();
+                    const y_center = parts.pop();
+                    const x_center = parts.pop();
+
+                    const label = parts.join(' ');
+
+                    const confNum = parseFloat(conf).toFixed(2);
+                    const x = (parseFloat(x_center) - parseFloat(width) / 2) * imgWidth + offsetX;
+                    const y = (parseFloat(y_center) - parseFloat(height) / 2) * imgHeight + offsetY;
+                    const boxWidth = parseFloat(width) * imgWidth;
+                    const boxHeight = parseFloat(height) * imgHeight;
+
+                    const box = document.createElement('div');
+                    box.classList.add('bounding-box');
+                    box.style.position = 'absolute';
+                    box.style.left = `${x}px`;
+                    box.style.top = `${y}px`;
+                    box.style.width = `${boxWidth}px`;
+                    box.style.height = `${boxHeight}px`;
+                    box.style.border = '2px solid red';
+                    box.style.boxSizing = 'border-box';
+                    box.style.pointerEvents = 'none';
+
+                    const labelEl = document.createElement('div');
+                    labelEl.innerText = `${label} (${confNum})`;
+                    labelEl.style.position = 'absolute';
+                    labelEl.style.top = '0';
+                    labelEl.style.left = '0';
+                    labelEl.style.backgroundColor = 'rgba(0,0,0,0.6)';
+                    labelEl.style.color = 'white';
+                    labelEl.style.fontSize = '12px';
+                    labelEl.style.padding = '2px 4px';
+                    labelEl.style.pointerEvents = 'none';
+
+                    box.appendChild(labelEl);
+                    overlay.appendChild(box);
+                });
+            } else {
+                appendToPlaygroundLog("🛑 Unknown error! Details " + data.error);
+            }
+        })
+        .catch(err => appendToPlaygroundLog("🛑 Network error: " + err.message));
+}
+
+// Сброс всех шагов препроцессинга (изображение возвращается к исходному состоянию)
+function resetPlaygroundPreproc() {
+    const img = document.getElementById('playground-frame-image');
+
+    fetch(`/reset-preproc?frame_index=${window.currentFrameIndex}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success' && data.image_base64) {
+                img.src = `data:image/jpeg;base64,${data.image_base64}`;
+                appendToPlaygroundLog('✅ Preprocessing steps removed!');
+            } else {
+                appendToPlaygroundLog("🛑 Unknown error! Details: " + data.error);
+            }
+        })
+        .catch(err => appendToPlaygroundLog("🛑 Preprocessing reset error: " + err.message));
+}
+
 document.addEventListener("DOMContentLoaded", function () {
 
     const playgroundPanel = document.getElementById('playground-panel');
     const enterPlaygroundBtn = document.getElementById('enter_playground_btn');
     const playgroundInput = document.getElementById("playground-command-input");
     const closePlaygroundPanelBtn = document.getElementById('close-playground-panel-btn');
-    const log = document.getElementById('playground-log-output');
     const img = document.getElementById('playground-frame-image');
 
     // История команд в консоли Playground
     let commandHistory = [];
     let historyIndex = -1;
 
-    // Вывод строки в лог (имитация консоли)
-    function appendToPlaygroundLog(message, skip_selector_char = false) {
-        if (!skip_selector_char) {
-            log.textContent += "> " + message + '\n';
-        }
-        else {
-            log.textContent += message + '\n';
-        }
-        log.scrollTop = log.scrollHeight;
-    }
-
-    // Очистка лога
-    function clearPlaygroundLog() {
-        log.textContent = "";
-    }
-
-    // Сброс аннотаций в Playground (все bounding box'ы удаляются)
-    function resetPlaygroundAnnotations() {
-        const overlay = document.getElementById('playground-bounding-boxes');
-        overlay.innerHTML = '';
-        appendToPlaygroundLog('✅ All annotations removed!');
-    }
-
-    // Сброс всех шагов препроцессинга (изображение возвращается к исходному состоянию)
-    function resetPlaygroundPreproc() {
-        fetch(`/reset-preproc?frame_index=${currentFrameIndex}`)
-            .then(response => response.json())
-            .then(data => {
-                if (data.status === 'success' && data.image_base64) {
-                    img.src = `data:image/jpeg;base64,${data.image_base64}`;
-                    appendToPlaygroundLog('✅ Preprocessing steps removed!');
-                } else {
-                    appendToPlaygroundLog("🛑 Unknown error! Details: " + data.error);
-                }
-            })
-            .catch(err => appendToPlaygroundLog("🛑 Preprocessing reset error: " + err.message));
-    }
-
     // Обработчик клика по кнопке "Playground"
     enterPlaygroundBtn.addEventListener('click', function () {
         playgroundPanel.classList.add('active');
-        fetch(`/initialize-playground?frame_index=${currentFrameIndex}`)
+        fetch(`/initialize-playground?frame_index=${window.currentFrameIndex}`)
             .then(response => response.json())
             .then(data => {
                 if (data.status === 'success' && data.image_base64) {
@@ -79,88 +166,6 @@ document.addEventListener("DOMContentLoaded", function () {
             })
             .catch(err => appendToPlaygroundLog("🛑 Playground initialization error: " + err.message));
     })
-
-    // Функция для аннотирования текущего кадра с помощью выбранной модели
-    function playgroundAnnotate(model, confidence) {
-        fetch(`/annotate-playground-frame?frame_index=${currentFrameIndex}&model=${model}`)
-            .then(response => response.json())
-            .then(data => {
-                if (data.status === 'success' && data.annotations && data.time) {
-
-                    const filteredAnnotations = data.annotations.filter(annotation => {
-                        const parts = annotation.trim().split(' ');
-                        const conf = parseFloat(parts[parts.length - 1]);
-                        return conf >= confidence;
-                    });
-
-                    appendToPlaygroundLog(`✅ Annotated with ${model} model\ntime: ${data.time} s\nconfidence: ${confidence}`);
-                    appendToPlaygroundLog("Bounding boxes:", skip_selector_char = true)
-                    filteredAnnotations.forEach(ann => {
-                        appendToPlaygroundLog(ann, skip_selector_char = true)
-                    });
-
-                    const overlay = document.getElementById('playground-bounding-boxes');
-                    const container = document.getElementById('playground-image-container');
-
-                    overlay.innerHTML = '';
-
-                    const imgRect = img.getBoundingClientRect();
-                    const containerRect = container.getBoundingClientRect();
-
-                    const offsetX = imgRect.left - containerRect.left;
-                    const offsetY = imgRect.top - containerRect.top;
-
-                    const imgWidth = img.clientWidth;
-                    const imgHeight = img.clientHeight;
-
-                    filteredAnnotations.forEach(annotation => {
-                        const parts = annotation.trim().split(' ');
-
-                        const conf = parts.pop();
-                        const height = parts.pop();
-                        const width = parts.pop();
-                        const y_center = parts.pop();
-                        const x_center = parts.pop();
-
-                        const label = parts.join(' ');
-
-                        const confNum = parseFloat(conf).toFixed(2);
-                        const x = (parseFloat(x_center) - parseFloat(width) / 2) * imgWidth + offsetX;
-                        const y = (parseFloat(y_center) - parseFloat(height) / 2) * imgHeight + offsetY;
-                        const boxWidth = parseFloat(width) * imgWidth;
-                        const boxHeight = parseFloat(height) * imgHeight;
-
-                        const box = document.createElement('div');
-                        box.classList.add('bounding-box');
-                        box.style.position = 'absolute';
-                        box.style.left = `${x}px`;
-                        box.style.top = `${y}px`;
-                        box.style.width = `${boxWidth}px`;
-                        box.style.height = `${boxHeight}px`;
-                        box.style.border = '2px solid red';
-                        box.style.boxSizing = 'border-box';
-                        box.style.pointerEvents = 'none';
-
-                        const labelEl = document.createElement('div');
-                        labelEl.innerText = `${label} (${confNum})`;
-                        labelEl.style.position = 'absolute';
-                        labelEl.style.top = '0';
-                        labelEl.style.left = '0';
-                        labelEl.style.backgroundColor = 'rgba(0,0,0,0.6)';
-                        labelEl.style.color = 'white';
-                        labelEl.style.fontSize = '12px';
-                        labelEl.style.padding = '2px 4px';
-                        labelEl.style.pointerEvents = 'none';
-
-                        box.appendChild(labelEl);
-                        overlay.appendChild(box);
-                    });
-                } else {
-                    appendToPlaygroundLog("🛑 Unknown error! Details " + data.error);
-                }
-            })
-            .catch(err => appendToPlaygroundLog("🛑 Network error: " + err.message));
-    }
 
     // Обработчик ввода в консоли Playground
     playgroundInput.addEventListener('keydown', function (event) {
@@ -236,7 +241,7 @@ document.addEventListener("DOMContentLoaded", function () {
                             }
                         }
 
-                        const query = new URLSearchParams({ frame_index: currentFrameIndex, method, ...params }).toString();
+                        const query = new URLSearchParams({ frame_index: window.currentFrameIndex, method, ...params }).toString();
 
                         fetch(`/apply-preproc-to-frame?${query}`)
                             .then(response => response.json())

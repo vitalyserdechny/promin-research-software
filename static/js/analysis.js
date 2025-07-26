@@ -37,6 +37,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
     const outsideElems = analysisPanelContent.querySelectorAll('.outside-div-elems');
 
+    const selectAllModelsCheckbox = document.getElementById('select_all_models');
+
     socket.on('analysis-progress-update', function (data) {
         const msg = data.message;
         const step = data.step;
@@ -99,6 +101,13 @@ document.addEventListener("DOMContentLoaded", function () {
             console.error("Unknown view mode:", mode);
         }
     }
+
+    selectAllModelsCheckbox.addEventListener('click', function () {
+        const modelCheckboxes = document.querySelectorAll('#model-selection input[name="model"]');
+        modelCheckboxes.forEach(checkbox => {
+            checkbox.checked = selectAllModelsCheckbox.checked;
+        });
+    })
 
     fileInput.addEventListener('change', function () {
         const file = fileInput.files[0];

@@ -29,3 +29,15 @@ function formatTimestamp(timestamp) {
         minute: '2-digit'
     });
 }
+
+// Проверка, является ли элемент потомком другого элемента
+function isDescendant(parent, child) {
+    let node = child.parentNode;
+    while (node != null) {
+        if (node == parent) {
+            return true;
+        }
+        node = node.parentNode;
+    }
+    return false;
+}
