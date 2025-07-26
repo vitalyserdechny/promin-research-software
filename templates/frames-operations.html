@@ -142,7 +142,7 @@
 
     <div id="analysis-panel" class="analysis-panel">
         <div id="analysis-panel-header" class="analysis-panel-header">
-            <h2>New Analysis 📈</h2>
+            <h2>Analysis 📈</h2>
             <button id="close-analysis-panel-btn" class="close-analysis-panel-btn">❌</button>
         </div>
         <div id="analysis-panel-content" class="analysis-panel-content">
@@ -204,7 +204,10 @@
                 <h2 id="analysis-step"></h2>
                 <h3 id="analysis-message-text"></h3>
                 <audio id="bg-analysis-music" loop style="display: none;">
-                    <source src="{{ url_for('static', filename='audio/analysis_audio.mp3') }}" type="audio/mpeg">
+                    <source src="{{ url_for('static', filename='audio/bg_music.mp3') }}" type="audio/mpeg">
+                </audio>
+                <audio id="done-sound" style="display: none;">
+                    <source src="{{ url_for('static', filename='audio/done_music.mp3') }}" type="audio/mpeg">
                 </audio>
             </div>
             <div id="analysis-done-div">
@@ -212,7 +215,6 @@
                 <h2>Analysis done!</h2>
                 <button id="analysis-done-btn">OK!</button>
             </div>
-            <div id="results-div"></div>
         </div>
     </div>
 

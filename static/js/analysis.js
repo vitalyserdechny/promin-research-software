@@ -13,8 +13,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
     const socket = io.connect(this.location.origin)
 
-    const analysisWelcomeText = document.getElementById('analysis-welcome-text');
     const analysisAudio = document.getElementById('bg-analysis-music');
+    const doneAudio = document.getElementById('done-sound');
 
     const modelSelectionDiv = document.getElementById('model-selection');
     const preprocSelectionDiv = document.getElementById('preproc-selection');
@@ -27,11 +27,15 @@ document.addEventListener("DOMContentLoaded", function () {
 
     const runAnalysisBtn = document.getElementById('run-analysis-btn');
     const analysisMsgText = document.getElementById('analysis-message-text');
-    const analysisLoader = document.getElementById('analysis-loader');
     const analysisDoneBtn = document.getElementById('analysis-done-btn');
 
     const fileInput = document.getElementById('preproc-file-input');
     const textarea = document.getElementById('preproc-textarea');
+
+    const analysisProcessDiv = document.getElementById('analysis-process');
+    const analysisDoneDiv = document.getElementById('analysis-done-div');
+
+    const outsideElems = analysisPanelContent.querySelectorAll('.outside-div-elems');
 
     socket.on('analysis-progress-update', function (data) {
         const msg = data.message;
@@ -47,6 +51,55 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     });
 
+    socket.on('connect_error', () => {
+        alert("Connection lost 😵 Please check your server 👨‍🔧");
+    });
+
+    // mode может быть "analysis_setup", "analysis_process" или "analysis_finished"
+    function toggleView(mode) {
+        if (mode == "analysis_setup") {
+            // Отображаем все элементы для настройки анализа
+            modelSelectionDiv.style.display = 'flex';
+            preprocSelectionDiv.style.display = 'flex';
+            runAnalysisBtn.style.display = 'block';
+            
+            outsideElems.forEach(el => {
+                el.style.display = 'block';
+            })
+
+            // Скрываем элементы, которые не нужны на этапе настройки
+            analysisProcessDiv.style.display = 'none';
+            analysisDoneDiv.style.display = 'none';
+        }
+        else if (mode == "analysis_process"){
+            modelSelectionDiv.style.display = 'none';
+            preprocSelectionDiv.style.display = 'none';
+            runAnalysisBtn.style.display = 'none';
+
+            analysisProcessDiv.style.display = 'flex';
+
+            outsideElems.forEach(el => {
+                el.style.display = 'none';
+            })
+        }
+        else if (mode == "analysis_finished") {
+            modelSelectionDiv.style.display = 'none';
+            preprocSelectionDiv.style.display = 'none';
+            runAnalysisBtn.style.display = 'none';
+
+            analysisDoneDiv.style.display = 'flex';
+
+            outsideElems.forEach(el => {
+                el.style.display = 'none';
+            })
+
+            analysisProcessDiv.style.display = 'none';
+        }
+        else {
+            console.error("Unknown view mode:", mode);
+        }
+    }
+
     fileInput.addEventListener('change', function () {
         const file = fileInput.files[0];
         if (!file) return;
@@ -59,22 +112,7 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 
     openAnalysisPanelBtn.addEventListener('click', function () {
-        const analysisDoneDiv = document.getElementById('analysis-done-div');
-
-        const outsideElems = analysisPanelContent.querySelectorAll('.outside-div-elems')
-        outsideElems.forEach(el => {
-            el.style.display = 'block'
-        })
-
-        analysisLoader.style.display = 'none';
-        analysisMsgText.style.display = 'none';
-        analysisWelcomeText.style.display = 'none';
-        analysisDoneDiv.style.display = 'none';
-
-        modelSelectionDiv.style.display = 'flex';
-        preprocSelectionDiv.style.display = 'flex';
-        runAnalysisBtn.style.display = 'block';
-
+        toggleView("analysis_setup");
         analysisPanel.classList.add('active');
     });
 
@@ -91,25 +129,14 @@ document.addEventListener("DOMContentLoaded", function () {
             .map(checkbox => checkbox.value);
 
         if (selectedModels.length === 0) {
-            alert('Please select at least one model!');
+            alert('Please select at least one model 😡!');
             return;
         }
-        
-        analysisLoader.style.display = 'block';
-        analysisMsgText.style.display = 'block';
-        analysisWelcomeText.style.display = 'block';
 
-        modelSelectionDiv.style.display = 'none';
-        preprocSelectionDiv.style.display = 'none';
-        runAnalysisBtn.style.display = 'none';
+        toggleView("analysis_process");
 
         analysisAudio.currentTime = 0
         analysisAudio.play()
-
-        const outsideElems = analysisPanelContent.querySelectorAll('.outside-div-elems')
-        outsideElems.forEach(el => {
-            el.style.display = 'none'
-        })
 
         const preprocSteps = textarea.value.trim().split('\n').filter(line => line.trim() !== '');
 
@@ -117,8 +144,6 @@ document.addEventListener("DOMContentLoaded", function () {
             models: selectedModels,
             preprocessing_pipeline: preprocSteps.length === 0 ? [] : preprocSteps
         };
-
-        console.log(JSON.stringify(dataToSend))
 
         fetch("/run-analysis", {
             method: "POST",
@@ -129,20 +154,19 @@ document.addEventListener("DOMContentLoaded", function () {
         })
             .then(response => {
                 if (response.ok) {
-                    console.log("Analysis completed successfully!");
-                    response.json().then(results => {
-                        const analysisDoneDiv = document.getElementById('analysis-done-div');
-                        analysisLoader.style.display = 'none';
-                        analysisMsgText.style.display = 'none';
-                        analysisWelcomeText.style.display = 'none';
-                        analysisDoneDiv.style.display = 'flex';
-                        analysisAudio.pause()
-                    });
+                    toggleView("analysis_finished");
+                    analysisAudio.pause()
+                    doneAudio.currentTime = 0
+                    doneAudio.play()
                 } else {
-                    console.error("Error running analysis");
+                    console.error("Error running analysis:");
+                    alert("Error running analysis 🥲");
                 }
             })
-            .catch(error => console.error("Error running analysis:", error));
+            .catch(error => {
+                alert("Error running analysis 🥲\nDetails:" + error.message);
+                console.error("Error running analysis:", error)
+            });
     });
 
 });

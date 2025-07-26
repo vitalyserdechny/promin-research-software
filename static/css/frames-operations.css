@@ -832,7 +832,6 @@ footer {
     font-style: italic;
     color: #555;
     text-align: center;
-    display: none; /* Скрываем сообщение по умолчанию */
 }
 
 .analysis-loader {
@@ -843,7 +842,6 @@ footer {
     height: 50px;
     animation: analysis-loader-spin 2s linear infinite;
     margin: 20px auto; /* Центрирование */
-    display: none; /* Скрываем загрузчик по умолчанию */
 }
 
 @keyframes analysis-loader-spin {
@@ -894,10 +892,6 @@ footer {
     align-items: center;
     justify-content: center;
     padding: 20px;
-}
-
-#analysis-loader {
-    display: none;
 }
 
 .frame-viewer-header {
@@ -1051,10 +1045,6 @@ footer {
 }
 
 /* **************************************** */
-#analysis-done-div, #analysis-welcome-text {
-    display: none;
-}
-
 #analysis-done-div {
     flex-direction: column;
     justify-content: center;
