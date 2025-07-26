@@ -424,19 +424,6 @@ footer {
     transition: background 0.3s ease;
 }
 
-#compare-frame-with-models {
-    border-radius: 5px;
-    background: rgba(219, 106, 31, 0.75);
-    border: 0;
-    padding: 5px 10px;
-    font-size: 12pt;
-    transition: background 0.3s ease;
-}
-
-#compare-frame-with-models:hover {
-    background: rgba(219, 106, 31, 0.9);
-}
-
 .paste-bounding-box-btn-active {
     background: rgba(56, 218, 247, 0.75);
     border: none;
@@ -518,7 +505,7 @@ footer {
     display: none;
 }
 
-.analysis-panel, .compare-frames-panel, .select-report-panel, .view-report-panel {
+.analysis-panel, .select-report-panel, .view-report-panel {
     position: fixed;
     background-color: rgba(255, 255, 255, 0.9);
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
@@ -541,14 +528,14 @@ footer {
     height: 90%;
 }
 
-.analysis-panel.active, .compare-frames-panel.active, .playground-panel.active, .select-report-panel.active, .view-report-panel.active {
+.analysis-panel.active, .playground-panel.active, .select-report-panel.active, .view-report-panel.active {
     display: flex;
     /* Показываем панель */
     opacity: 1;
     transform: translateY(0);
 }
 
-.analysis-panel-header, .compare-frames-panel-header, .playground-panel-header, .select-report-panel-header, .view-report-panel-header {
+.analysis-panel-header, .playground-panel-header, .select-report-panel-header, .view-report-panel-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -556,18 +543,18 @@ footer {
     border-bottom: 1px solid #eee;
 }
 
-.analysis-panel-header h2, .compare-frames-panel-header h2, .playground-panel-header h2, .select-report-panel h2, .view-report-panel h2 {
+.analysis-panel-header h2, .playground-panel-header h2, .select-report-panel h2, .view-report-panel h2 {
     margin: 0;
 }
 
-.close-analysis-panel-btn, .close-compare-frames-panel-btn, .close-playground-panel-btn, .close-select-report-panel-btn, .close-view-report-panel-btn {
+.close-analysis-panel-btn, .close-playground-panel-btn, .close-select-report-panel-btn, .close-view-report-panel-btn {
     background: none;
     border: none;
     font-size: 1.5em;
     cursor: pointer;
 }
 
-.analysis-panel-content, .compare-frames-panel-content, .select-report-panel-content, .view-report-panel-content {
+.analysis-panel-content, .select-report-panel-content, .view-report-panel-content {
     padding: 0px 10px;
     display: flex;
     flex-direction: column;

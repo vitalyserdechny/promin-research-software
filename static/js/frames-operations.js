@@ -11,10 +11,6 @@ document.addEventListener("DOMContentLoaded", function () {
     const closeProjectButton = document.getElementById("close-project-btn");
     const unsavedDataMsg = document.getElementById('unsaved-data-warning-msg')
 
-    const compareFramesPanel = document.getElementById('compare-frames-panel');
-    const closeCompareFramesPanelBtn = document.getElementById('close-compare-frames-panel-btn');
-
-    const compareFrameWithModelsBtn = document.getElementById('compare-frame-with-models');
     const selectAllModelsCheckbox = document.getElementById('select_all_models');
 
     const cudaStatusBtn = document.getElementById('cuda_status_btn');
@@ -53,81 +49,6 @@ document.addEventListener("DOMContentLoaded", function () {
         modelCheckboxes.forEach(checkbox => {
             checkbox.checked = selectAllModelsCheckbox.checked;
         });
-    })
-
-    compareFrameWithModelsBtn.addEventListener('click', function () {
-        // TODO
-        // Получаем аннотации с сервера
-        fetch(`/get-frame-annotations?frame_index=${currentFrameIndex}`)
-            .then(response => response.json())
-            .then(data => {
-                // Создаем контейнер для всех вариантов
-                const container = document.createElement('div');
-                container.className = 'frame-comparison-container';
-                container.id = 'frame-comparison-container';
-                container.style.display = 'grid';
-                container.style.gridTemplateColumns = 'repeat(2, 1fr)';
-                container.style.gap = '3px';
-                container.style.marginTop = '0'; // Убираем отступ сверху
-
-                // Получаем список всех доступных моделей (ground truth + модели из analysis)
-                const allModels = ['ground_truth', ...Object.keys(data.models)];
-
-                // Создаем 4 варианта отображения
-                for (let i = 0; i < 4; i++) {
-                    const comparisonItem = document.createElement('div');
-                    comparisonItem.className = 'comparison-item';
-
-                    // Создаем выпадающий список для выбора модели
-                    const select = document.createElement('select');
-                    select.className = 'model-selector';
-                    select.dataset.itemIndex = i;
-
-                    // Заполняем опциями
-                    allModels.forEach(model => {
-                        const option = document.createElement('option');
-                        option.value = model;
-                        option.textContent = model === 'ground_truth' ? 'Ground Truth' : model;
-                        select.appendChild(option);
-                    });
-
-                    // Выбираем ground truth для первого элемента, остальные - модели
-                    select.value = i === 0 ? 'ground_truth' : allModels[1] || 'ground_truth';
-
-                    // Контейнер для изображения с аннотациями
-                    const canvasContainer = document.createElement('div');
-                    canvasContainer.className = 'canvas-container';
-                    canvasContainer.style.position = 'relative';
-
-                    const canvas = document.createElement('canvas');
-                    canvas.className = 'annotation-canvas';
-                    canvas.width = 620; // Настроить под ваши размеры
-                    canvas.height = 320;
-
-                    canvasContainer.appendChild(canvas);
-
-                    comparisonItem.appendChild(select);
-                    comparisonItem.appendChild(canvasContainer);
-                    container.appendChild(comparisonItem);
-
-                    // Отрисовываем начальные аннотации
-                    drawAnnotations(canvas, currentFrameIndex, select.value, data);
-
-                    // Обработчик изменения выбора модели
-                    select.addEventListener('change', function () {
-                        drawAnnotations(canvas, currentFrameIndex, this.value, data);
-                    });
-                }
-
-                compareFramesPanel.appendChild(container);
-                compareFramesPanel.classList.add('active');
-            })
-            .catch(error => {
-                console.error('Error fetching annotations:', error);
-                resultsDiv.innerHTML = '<p>Error loading annotations</p>';
-            });
-
-
     })
 
     // Функция для отрисовки аннотаций на canvas
@@ -174,13 +95,6 @@ document.addEventListener("DOMContentLoaded", function () {
         };
     }
 
-    closeCompareFramesPanelBtn.addEventListener('click', function () {
-        const container = compareFramesPanel.querySelector('#frame-comparison-container');
-        if (container) {
-            container.remove();
-        }
-        compareFramesPanel.classList.remove('active'); // Скрываем панель
-    });
     closeProjectButton.addEventListener("click", function () {
         if (annotationsDataChanged) {
             if (confirm("Are you sure you want to close the project without saving changes?")) {
