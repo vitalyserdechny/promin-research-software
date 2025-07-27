@@ -1,0 +1,84 @@
+.message-box {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.3); 
+  background: linear-gradient(135deg, rgba(0,0,0,0.4), rgba(0,0,0,0.2));
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  color: #fff;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-radius: 16px;
+  padding: 24px 32px;
+  text-align: center;
+  z-index: 1000;
+  min-width: 300px;
+  max-width: 90vw;
+  z-index: 9999;
+  display: none;
+}
+
+.message-content {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.message-icon {
+  width: 48px;
+  height: 48px;
+}
+
+.message-text {
+  font-size: 16px;
+  color: #ffffff;
+  text-shadow: 0 0 3px rgba(0,0,0,0.6);
+}
+
+.ok-button {
+  padding: 10px 24px;
+  font-size: 16px;
+  background-color: #32cd82;
+  border: none;
+  border-radius: 8px;
+  color: white;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.ok-button:hover {
+  background-color: #29b36f;
+}
+
+#confirm-cancel-btn {
+  background-color: #d9534f; /* Красный оттенок */
+}
+
+#confirm-cancel-btn:hover {
+  background-color: #c9302c;
+}
+
+#prompt-input {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 8px;
+  font-size: 16px;
+  background-color: rgba(255, 255, 255, 0.1);
+  color: #fff;
+  margin-top: 8px;
+  outline: none;
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.3);
+  transition: border-color 0.3s, background-color 0.3s;
+}
+
+#prompt-input:focus {
+  border-color: #32cd82;
+  background-color: rgba(255, 255, 255, 0.2);
+}

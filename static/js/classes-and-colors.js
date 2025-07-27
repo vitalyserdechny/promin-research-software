@@ -45,6 +45,6 @@ document.addEventListener("DOMContentLoaded", function () {
         })
         .catch(error => {
             console.error("Error loading classes and colors:", error);
-            alert("An error occurred while loading classes and colors 😭😭😭");
+            showMessageBox("An error occurred while loading classes and colors", "error")
         });
 });

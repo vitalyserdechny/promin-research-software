@@ -22,7 +22,7 @@ let bufferAnnotationsData = null;
 
 function drawBoundingBoxes(annotations) {
     const boxesContainer = document.getElementById("bounding-boxes");
-    boxesContainer.innerHTML = "";  
+    boxesContainer.innerHTML = "";
 
     const image = document.getElementById("frame-image");
     const imageWidth = image.width;
@@ -32,8 +32,6 @@ function drawBoundingBoxes(annotations) {
         let box = document.createElement("div");
         box.className = "bounding-box";
         box.dataset.index = index;
-
-        console.log(box)
 
         // Рассчитываем размеры и позицию рамки относительно изображения
         const boxLeft = (ann.x - ann.width / 2) * imageWidth;
@@ -95,8 +93,8 @@ function drawBoundingBoxes(annotations) {
 function updateBoundingBoxList(annotations) {
     const listContainer = document.getElementById("bounding-boxes-values");
     const pasteBoundingBoxButton = document.getElementById("paste-bounding-box-btn");
-    
-    listContainer.innerHTML = "";  
+
+    listContainer.innerHTML = "";
 
     annotations.forEach((ann, index) => {
         let item = document.createElement("div");
@@ -145,7 +143,8 @@ function updateBoundingBoxList(annotations) {
         btn.addEventListener("click", function () {
             const index = parseInt(btn.dataset.index);
 
-            if (confirm("Do you really want to delete this bounding box?", "Delete confirmation")) {
+            showConfirmBox("Do you really want to delete this bounding box?", function (confirmed) {
+                if (!confirmed) return;
 
                 // Если в кадрах такой класс больше не встречается, удалить его из classesAndColors
                 const frameIndex = parseInt(document.getElementById("frame-number").textContent);
@@ -161,35 +160,39 @@ function updateBoundingBoxList(annotations) {
                 annotations.splice(index, 1);
                 drawBoundingBoxes(annotations);
                 updateBoundingBoxList(annotations);
-            }
+            });
         })
     });
 
     document.querySelectorAll(".edit-label").forEach(btn => {
         btn.addEventListener("click", function () {
             const index = parseInt(btn.dataset.index);
-            const newLabel = prompt("Enter a new class for this bounding box:", annotations[index].label);
-            const oldLabel = annotations[index].label;
+            showPromptBox("Enter a new class for this bounding box:", annotations[index].label, function (result) {
+                if (result.confirmed) {
+                    const newLabel = result.value.trim();
+                    const oldLabel = annotations[index].label;
 
-            if (newLabel !== null && newLabel.trim() !== "") {
-                annotations[index].label = newLabel.trim();  
-                drawBoundingBoxes(annotations);  
-                updateBoundingBoxList(annotations); 
+                    if (newLabel !== null && newLabel.trim() !== "") {
+                        annotations[index].label = newLabel.trim();
+                        drawBoundingBoxes(annotations);
+                        updateBoundingBoxList(annotations);
 
-                // Если после изменения у нас появился новый класс, которого раньше не было, добавить его в classesAndColors
-                if (!window.classesAndColors[newLabel]) {
-                    window.classesAndColors[newLabel] = [Math.floor(Math.random() * 256), Math.floor(Math.random() * 256), Math.floor(Math.random() * 256)];
-                    displayClassesAndColors(window.classesAndColors);
+                        // Если после изменения у нас появился новый класс, которого раньше не было, добавить его в classesAndColors
+                        if (!window.classesAndColors[newLabel]) {
+                            window.classesAndColors[newLabel] = [Math.floor(Math.random() * 256), Math.floor(Math.random() * 256), Math.floor(Math.random() * 256)];
+                            displayClassesAndColors(window.classesAndColors);
+                        }
+
+                        // Если в кадрах такой класс больше не встречается, удалить его из classesAndColors
+                        const labelOccurences = allFrames.map(f => f.annotations).flat().filter(a => a.label === oldLabel).length;
+
+                        if (labelOccurences === 1) {
+                            delete window.classesAndColors[oldLabel];
+                            displayClassesAndColors(window.classesAndColors);
+                        }
+                    }
                 }
-
-                // Если в кадрах такой класс больше не встречается, удалить его из classesAndColors
-                const labelOccurences = allFrames.map(f => f.annotations).flat().filter(a => a.label === oldLabel).length;
-
-                if (labelOccurences === 1) {
-                    delete window.classesAndColors[oldLabel];
-                    displayClassesAndColors(window.classesAndColors);
-                }
-            }
+            });
         });
     });
 }
@@ -304,31 +307,34 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 
     addBoundingBoxButton.addEventListener("click", function () {
-        const label = prompt("Enter the class name:");
+        showPromptBox("Enter the class name for the new bounding box:", "", function (result) {
+            if (result.confirmed) {
+                const label = result.value.trim();
+                if (label !== null && label.trim() !== "") {
+                    const frameIndex = parseInt(document.getElementById("frame-number").textContent);
+                    const frameData = allFrames.find(f => f.frame_index === frameIndex);
 
-        if (label !== null && label.trim() !== "") {
-            const frameIndex = parseInt(document.getElementById("frame-number").textContent);
-            const frameData = allFrames.find(f => f.frame_index === frameIndex);
+                    if (!frameData) return;
 
-            if (!frameData) return;
+                    if (!window.classesAndColors[label.trim()]) {
+                        window.classesAndColors[label.trim()] = [Math.floor(Math.random() * 256), Math.floor(Math.random() * 256), Math.floor(Math.random() * 256)];
+                        displayClassesAndColors(window.classesAndColors);
+                    }
 
-            if (!window.classesAndColors[label.trim()]) {
-                window.classesAndColors[label.trim()] = [Math.floor(Math.random() * 256), Math.floor(Math.random() * 256), Math.floor(Math.random() * 256)];
-                displayClassesAndColors(window.classesAndColors);
+                    const newAnnotation = {
+                        label: label.trim(),
+                        x: 0.5,
+                        y: 0.5,
+                        width: 0.2,
+                        height: 0.2,
+                        confidence: 1.0
+                    };
+
+                    frameData.annotations.push(newAnnotation);
+                    drawBoundingBoxes(frameData.annotations);
+                    updateBoundingBoxList(frameData.annotations);
+                }
             }
-
-            const newAnnotation = {
-                label: label.trim(),
-                x: 0.5,
-                y: 0.5,
-                width: 0.2,
-                height: 0.2,
-                confidence: 1.0
-            };
-
-            frameData.annotations.push(newAnnotation);
-            drawBoundingBoxes(frameData.annotations);
-            updateBoundingBoxList(frameData.annotations);
-        }
+        });
     });
 });

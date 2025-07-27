@@ -25,7 +25,7 @@ document.addEventListener("DOMContentLoaded", function () {
         const selectedValue = reportSelect.value;
 
         if (!selectedValue || !selectedValue.includes('|')) {
-            alert('Please select a valid report');
+            showMessageBox("Please select a valid report", "warning");
             return;
         }
 
@@ -191,7 +191,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 });
             })
             .catch(error => {
-                alert('Failed to load report 🥲\nError details: ' + error);
+                showMessageBox("Failed to load report 🥲<br>Error details: " + error, "error");
                 console.error('Failed to load report:', error);
             });
 
@@ -235,7 +235,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 });
             })
             .catch(error => {
-                alert('Failed to load report 🥲\nError details: ' + error);
+                showMessageBox("Failed to load reports 🥲<br>Error details: " + error, "error");
                 console.error('Failed to load reports:', error);
             });
 

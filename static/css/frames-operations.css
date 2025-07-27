@@ -962,14 +962,6 @@ footer {
   display: block;
 }
 
-/* --- */
-
-#unsaved-data-warning-msg {
-    color: rgba(255, 0, 0, 0.8);
-    font-size: 12pt;
-    opacity: 0;
-}
-
 /* ****************************************************** */
 
 .report-split-container {

@@ -9,12 +9,10 @@ document.addEventListener("DOMContentLoaded", function () {
             .then(response => response.json())
             .then(data => {
                 if (data.status === 'success') {
-                    message = "CUDA status: " + data.cuda_available
-                    message += "\nDevices: " + data.cuda_devices
-                    alert(message)
+                    showMessageBox("CUDA status: " + data.cuda_available + "<br>Devices: " + data.cuda_devices, "info");
                 }
                 else {
-                    alert('CUDA status checking error!')
+                    showMessageBox("An error occurred while checking CUDA status", "error");
                 }
             })
     })
@@ -70,10 +68,10 @@ document.addEventListener("DOMContentLoaded", function () {
             .catch(error => console.error("Error saving project data:", error));
 
         if (successfully) {
-            alert("The project has been successfully saved!");
+            showMessageBox("The project has been successfully saved!", "info");
         }
         else {
-            alert("An error occurred while saving. Please try again.");
+            showMessageBox("An error occurred while saving. Please try again", "error");
         }
     });
 

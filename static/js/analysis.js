@@ -99,6 +99,7 @@ document.addEventListener("DOMContentLoaded", function () {
         }
         else {
             console.error("Unknown view mode:", mode);
+            showMessageBox('Oops... something went wrong internally...', 'error');
         }
     }
 
@@ -138,7 +139,7 @@ document.addEventListener("DOMContentLoaded", function () {
             .map(checkbox => checkbox.value);
 
         if (selectedModels.length === 0) {
-            alert('Please select at least one model 😡!');
+            showMessageBox('Please select at least one model for analysis!', 'error');
             return;
         }
 
@@ -168,14 +169,12 @@ document.addEventListener("DOMContentLoaded", function () {
                     doneAudio.currentTime = 0
                     doneAudio.play()
                 } else {
-                    console.error("Error running analysis:");
-                    alert("Error running analysis 🥲");
+                    showMessageBox('Error running analysis 🥲', 'error');
                 }
             })
             .catch(error => {
-                alert("Error running analysis 🥲\nDetails:" + error.message);
+                showMessageBox('Error running analysis 🥲', 'error');
                 console.error("Error running analysis:", error)
             });
     });
-
 });

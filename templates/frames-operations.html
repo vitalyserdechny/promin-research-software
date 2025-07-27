@@ -17,6 +17,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Audiowide&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="../static/css/frames-operations.css">
+    <link rel="stylesheet" href="../static/css/messagebox.css">
     <link rel="icon" href="../static/images/favicon_new.ico" type="image/x-icon">
 </head>
 
@@ -32,26 +33,26 @@
         <nav class="navbar">
             <ul class="nav-menu">
                 <li class="nav-item dropdown">
-                    <a href="#">Project ▾</a>
+                    <a href="#">🗂️ Project ▾</a>
                     <ul class="dropdown-menu">
                         <li><a href="#" id="save-project-btn">💾 Save</a></li>
                         <li><a href="#" id="close-project-btn">🔴 Close</a></li>
                     </ul>
                 </li>
                 <li class="nav-item dropdown">
-                    <a href="#">Analysis ▾</a>
+                    <a href="#">🚀 Analysis ▾</a>
                     <ul class="dropdown-menu">
                         <li><a href="#" id="models-analysis-btn">📈 New Analysis</a></li>
                         <li><a href="#" id="get-reports-btn">📋 Reports</a></li>
                     </ul>
                 </li>
-                <li class="nav-item"><a href="#" id="enter_playground_btn">Playground</a></li>
-                <li class="nav-item"><a href="#" id="cuda_status_btn">CUDA status</a></li>
-                <li class="nav-item"><a href="#">Help</a></li>
+                <li class="nav-item"><a href="#" id="enter_playground_btn">🎮 Playground</a></li>
+                <li class="nav-item"><a href="#" id="cuda_status_btn">🧮 CUDA status</a></li>
+                <li class="nav-item"><a href="#">ℹ️ Help</a></li>
             </ul>
         </nav>
-        <h3 id="unsaved-data-warning-msg">⚠️ Unsaved changes</h3>
     </header>
+
     <main>
         <div class="frame-viewer" id="frame-viewer">
             <div class="frame-viewer-header">
@@ -139,8 +140,8 @@
         </div>
         <div id="analysis-panel-content" class="analysis-panel-content">
             <h3 class="outside-div-elems">Models 🤖:</h3>
-            <label class="outside-div-elems"><input class="outside-div-elems" type="checkbox" name="select_all_models" value="select_all"
-                    id="select_all_models">Select All</label><br>
+            <label class="outside-div-elems"><input class="outside-div-elems" type="checkbox" name="select_all_models"
+                    value="select_all" id="select_all_models">Select All</label><br>
             <div id="model-selection">
                 <div>
                     <label><input type="checkbox" name="model" value="yolo_11_x"> YOLOv11(x)</label><br>
@@ -184,7 +185,8 @@
                 <h3>Preprocessing pipeline 🛠️:</h3>
                 <label for="preproc-file-input">Upload preprocessing pipeline (.txt):</label><br>
                 <input type="file" id="preproc-file-input" accept=".txt"><br><br>
-                <textarea id="preproc-textarea" rows="6" cols="60" placeholder="Pipeline will appear here..." readonly></textarea>
+                <textarea id="preproc-textarea" rows="6" cols="60" placeholder="Pipeline will appear here..."
+                    readonly></textarea>
             </div>
             <button id="run-analysis-btn" class="run-analysis-btn">Start Analysis ▶️</button>
             <div id="analysis-process">
@@ -210,10 +212,45 @@
         </div>
     </div>
 
+    <div id="message-box" class="message-box">
+        <div class="message-content">
+            <img src="https://cdn-icons-png.flaticon.com/512/190/190411.png" alt="Info Icon" class="message-icon" />
+            <p class="message-text">Это информационное сообщение для пользователя.</p>
+        </div>
+        <button class="ok-button" id="message-box-ok-btn">ОК</button>
+    </div>
+
+    <div id="confirm-box" class="message-box" style="display:none;">
+        <div class="message-content">
+            <img src="../static/images/quest.png" alt="Confirm Icon" class="message-icon" />
+            <p class="message-text" id="confirm-text">Подтвердите действие</p>
+        </div>
+        <div style="display: flex; justify-content: center; gap: 16px;">
+            <button class="ok-button" id="confirm-ok-btn">OK</button>
+            <button class="ok-button" id="confirm-cancel-btn" style="background-color:#d9534f;">Cancel</button>
+        </div>
+    </div>
+
+    <div id="prompt-box" class="message-box" style="display:none;">
+        <div class="message-content">
+            <img src="../static/images/enter.png" alt="Prompt Icon" class="message-icon" />
+            <div style="flex: 1; text-align: left;">
+                <p class="message-text" id="prompt-text">Your content:</p>
+                <input type="text" id="prompt-input"
+                    style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #ccc; margin-top: 8px; font-size: 16px;" />
+            </div>
+        </div>
+        <div style="display: flex; justify-content: center; gap: 16px;">
+            <button class="ok-button" id="prompt-ok-btn">OK</button>
+            <button class="ok-button" id="prompt-cancel-btn" style="background-color:#d9534f;">Cancel</button>
+        </div>
+    </div>
+
     <script src="https://unpkg.com/@dotlottie/player-component@2.7.12/dist/dotlottie-player.mjs" type="module"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.socket.io/4.0.1/socket.io.min.js"></script>
 
+    <script src="../static/js/messagebox.js"></script>
     <script src="../static/js/utils.js"></script>
     <script src="../static/js/bounding-boxes.js"></script>
     <script src="../static/js/frames-rendering.js"></script>
