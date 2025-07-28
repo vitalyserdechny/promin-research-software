@@ -1,18 +1,22 @@
 from detectors.object_detector import ObjectDetector
 from ultralytics import YOLO
-import time
+import time, os
 
 class YoloDetector(ObjectDetector):
     """
     YOLO detector class (derived from ObjectDetector)
     """ 
-    def __init__(self, model_version = '11', model_size = 'x'):
+    def __init__(self, model_version = '11', model_size = 'x', model_dir='neural_models/weights/yolo'):
         self.model_version = model_version
         self.model_size = model_size
+
         if model_version == '11':
-            self.model = YOLO(f'yolo{model_version}{model_size}.pt')
+            model_filename = f'yolo{model_version}{model_size}.pt'
         else:
-            self.model = YOLO(f'yolov{model_version}{model_size}.pt')
+            model_filename = f'yolov{model_version}{model_size}.pt'
+        
+        self.model_path = os.path.join(model_dir, model_filename)
+        self.model = YOLO(self.model_path)
         self.classes = self.model.names  # Получаем названия классов из модели
 
     def detect(self, image):

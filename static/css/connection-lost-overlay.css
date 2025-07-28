@@ -1,3 +1,10 @@
+/**
+  * 🛑 Стили для оверлея "Потеряно соединение"
+  * Этот файл оформляет затемнение, которое появляется при потере соединения с сервером.
+  * Включает стили для фона, окна, иконки 📡 и текста.
+  *
+**/
+
 .connection-lost-overlay {
   position: fixed;
   top: 0;
@@ -10,7 +17,7 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 99999; /* выше всех остальных окон */
+  z-index: 99999; 
 }
 
 .connection-lost-box {

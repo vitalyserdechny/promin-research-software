@@ -1,0 +1,54 @@
+/**
+  * 📂 Стили для навигационного меню с выпадающим списком
+  * Оформление горизонтального навбара и вложенных пунктов меню.
+  * Включает стили для ссылок, эффектов наведения 🔗 и выпадающих подменю ⬇️.
+  * Выпадающее меню появляется при наведении на родительский пункт.
+**/
+
+.navbar {
+  padding: 0;
+  margin: 0;
+}
+
+.nav-menu {
+  list-style: none;
+  display: flex;
+  margin: 0;
+  padding: 0;
+}
+
+.nav-item {
+  position: relative;
+}
+
+.nav-item a {
+  display: block;
+  padding: 10px 20px;
+  color: black;
+  text-decoration: none;
+  font-family: 'Fira Sans', sans-serif;
+}
+
+.nav-item a:hover {
+    color: rgb(236, 118, 75);
+}
+
+.dropdown-menu {
+  display: none;
+  position: absolute;
+  background-color: white;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  min-width: 250px;
+  z-index: 1000;
+}
+
+.dropdown-menu li a {
+  padding: 10px 20px;
+  color: black;
+}
+
+.nav-item.dropdown:hover .dropdown-menu {
+  display: block;
+}
