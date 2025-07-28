@@ -1,5 +1,5 @@
 import cv2, os, random, glob, logging, json
-from preproc import apply_preproc, parse_preproc_pipeline
+from preproc import apply_preproc
 import numpy as np
 from detectors.yolo_detector import YoloDetector
 from config import *
@@ -126,10 +126,22 @@ def annotate_frame(frame, detector, output_annotations_dir, all_classes, preproc
         logging.error(f"Unable to read frame {frame}, skipping.")
         return
     
-    if preproc_pipeline != None:
-        for pipeline in preproc_pipeline:
-            preproc_method, preproc_params = parse_preproc_pipeline(pipeline)
-            img, _ = apply_preproc(img, preproc_method, **preproc_params)
+    if preproc_pipeline:
+        for step in preproc_pipeline:
+            if not isinstance(step, dict):
+                logging.warning(f"Invalid preprocessing step format: {step}")
+                continue
+            method = step.get("method")
+            params = step.get("params", {})
+            if not method:
+                logging.warning(f"Missing 'method' in preprocessing step: {step}")
+                continue
+            try:
+                logging.info(f"Applying preprocessing step: {method} with params: {params}")
+                img, _ = apply_preproc(img, method, **params)
+            except Exception as e:
+                logging.error(f"Error applying preprocessing step '{method}': {e}")
+                continue
     
     results, pr_time = detector.detect(img)
 

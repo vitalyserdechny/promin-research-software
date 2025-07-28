@@ -79,77 +79,11 @@ def dehaze(image, window_size=15, omega=0.95, t0=0.1, atmospheric_light_top_perc
 
     return restored_image
 
-def _ensure_color_space(image, current_cs, target_cs):
-    """
-    Обеспечивает, что изображение находится в требуемом цветовом пространстве.
-    Возвращает (изображение_в_целевом_цс, новое_цс).
-    """
-    if current_cs == target_cs:
-        return image, current_cs
-
-    if current_cs == "bgr":
-        if target_cs == "gray":
-            return cv2.cvtColor(image, cv2.COLOR_BGR2GRAY), "gray"
-        elif target_cs == "rgb":
-            return cv2.cvtColor(image, cv2.COLOR_BGR2RGB), "rgb"
-        elif target_cs == "hsv":
-            return cv2.cvtColor(image, cv2.COLOR_BGR2HSV), "hsv"
-        elif target_cs == "lab":
-            return cv2.cvtColor(image, cv2.COLOR_BGR2Lab), "lab"
-    elif current_cs == "rgb":
-        if target_cs == "gray":
-            return cv2.cvtColor(image, cv2.COLOR_RGB2GRAY), "gray"
-        elif target_cs == "bgr":
-            return cv2.cvtColor(image, cv2.COLOR_RGB2BGR), "bgr"
-        elif target_cs == "hsv":
-            return cv2.cvtColor(image, cv2.COLOR_RGB2HSV), "hsv"
-        elif target_cs == "lab":
-            return cv2.cvtColor(image, cv2.COLOR_RGB2Lab), "lab"
-    elif current_cs == "gray":
-        if target_cs == "bgr":
-            return cv2.cvtColor(image, cv2.COLOR_GRAY2BGR), "bgr"
-        elif target_cs == "rgb":
-            return cv2.cvtColor(image, cv2.COLOR_GRAY2RGB), "rgb"
-    # Добавьте другие конверсии по мере необходимости (HSV->BGR, Lab->BGR и т.д.)
-    # Например, если вам нужно конвертировать из HSV обратно в BGR
-    elif current_cs == "hsv" and target_cs == "bgr":
-        return cv2.cvtColor(image, cv2.COLOR_HSV2BGR), "bgr"
-    elif current_cs == "lab" and target_cs == "bgr":
-        return cv2.cvtColor(image, cv2.COLOR_Lab2BGR), "bgr"
-
-    raise ValueError(f"Unsupported color space conversion from {current_cs} to {target_cs}")
-
 def resize_to_32_multiple(image):
     h, w = image.shape[:2]
     new_h = h - (h % 32)
     new_w = w - (w % 32)
     return cv2.resize(image, (new_w, new_h))
-
-def parse_preproc_pipeline(pipeline_str):
-    """
-    Преобразует строку вида "canny threshold1=100 threshold2=200" в метод и параметры.
-    Возвращает: ('canny', {'threshold1': 100, 'threshold2': 200})
-    """
-    tokens = pipeline_str.strip().split()
-    if not tokens:
-        return 'none', {}
-
-    method = tokens[0]
-    params = {}
-    for token in tokens[1:]:
-        if '=' in token:
-            key, value = token.split('=', 1)
-            # Попробуем привести к int или float, иначе оставим строку
-            if value.isdigit():
-                value = int(value)
-            else:
-                try:
-                    value = float(value)
-                except ValueError:
-                    pass
-            params[key] = value
-    return method, params
-
 
 def apply_preproc(frame, preproc_method, **params):
     final_params = {}
@@ -244,29 +178,27 @@ def apply_preproc(frame, preproc_method, **params):
     # Contrast Enhancement Methods
     # *****************************
     elif preproc_method == "clahe":
-        # Переводим в градации серого
-        if len(frame.shape) == 3:
-            gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-        else:
-            gray = frame
-        # Извлекаем параметры
         clip_limit = float(params.get('clipLimit', 2.0))
         tile_grid_str = params.get('tileGridSize', '8x8')
-        final_params = {"clipLimit" : clip_limit, "tileGridSize":tile_grid_str}
+        final_params = {"clipLimit": clip_limit, "tileGridSize": tile_grid_str}
         try:
             tile_w, tile_h = map(int, tile_grid_str.lower().split('x'))
         except Exception:
-            tile_w, tile_h = 8, 8  
-        # Создаём объект CLAHE
+            tile_w, tile_h = 8, 8
+        # Перевод в LAB
+        lab = cv2.cvtColor(frame, cv2.COLOR_BGR2LAB)
+        l, a, b = cv2.split(lab)
+        # CLAHE только на L-канал
         clahe = cv2.createCLAHE(clipLimit=clip_limit, tileGridSize=(tile_w, tile_h))
-        # Применяем CLAHE
-        processed = clahe.apply(gray)
-        # Если нужно обратно в BGR для аннотации — конвертируем
-        processed = cv2.cvtColor(processed, cv2.COLOR_GRAY2BGR)
+        cl = clahe.apply(l)
+        # Объединение обратно
+        limg = cv2.merge((cl, a, b))
+        processed = cv2.cvtColor(limg, cv2.COLOR_LAB2BGR)
         return processed, final_params
     elif preproc_method == "hist_eq":
         gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
         processed = cv2.equalizeHist(gray)
+        processed = cv2.cvtColor(processed, cv2.COLOR_GRAY2BGR)
         return processed, final_params
     elif preproc_method == "gamma":
         gamma = float(params.get("g", 1.25))
@@ -347,7 +279,9 @@ def apply_preproc(frame, preproc_method, **params):
             return cv2.fastNlMeansDenoisingColored(frame, None, h, hColor, templateWindowSize, searchWindowSize), final_params
         else:
             gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-            return cv2.fastNlMeansDenoising(gray, None, h, templateWindowSize, searchWindowSize), final_params
+            denoised = cv2.fastNlMeansDenoising(gray, None, h, templateWindowSize, searchWindowSize)
+            denoised_bgr = cv2.cvtColor(denoised, cv2.COLOR_GRAY2BGR)
+            return denoised_bgr, final_params
     # *****************************
 
     # *****************************
@@ -388,7 +322,8 @@ def apply_preproc(frame, preproc_method, **params):
         else:
             raise ValueError(f"Unsupported morphological op: {op}")
 
-        return processed, final_params
+        processed_bgr = cv2.cvtColor(processed, cv2.COLOR_GRAY2BGR)
+        return processed_bgr, final_params
     elif preproc_method == "dcp":
         window_size = int(params.get('window_size', 15))
         omega = float(params.get('omega', 0.95))

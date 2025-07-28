@@ -41,7 +41,7 @@ function resetPlaygroundAnnotations() {
 // Функция для аннотирования текущего кадра с помощью выбранной модели
 function playgroundAnnotate(model, confidence) {
     const img = document.getElementById('playground-frame-image');
-    
+
     fetch(`/annotate-playground-frame?frame_index=${window.currentFrameIndex}&model=${model}`)
         .then(response => response.json())
         .then(data => {
@@ -151,6 +151,9 @@ document.addEventListener("DOMContentLoaded", function () {
     let commandHistory = [];
     let historyIndex = -1;
 
+    // История команд препроцессинга
+    let preprocHistory = [];
+
     // Обработчик клика по кнопке "Playground"
     enterPlaygroundBtn.addEventListener('click', function () {
         playgroundPanel.classList.add('active');
@@ -210,10 +213,12 @@ document.addEventListener("DOMContentLoaded", function () {
                         }
                         else if (target == "preproc") {
                             resetPlaygroundPreproc()
+                            preprocHistory = [];
                         }
                         else if (target == "all") {
                             resetPlaygroundAnnotations()
                             resetPlaygroundPreproc()
+                            preprocHistory = [];
                         }
                         else {
                             appendToPlaygroundLog("🛑 Invalid target. Possible values: [annotations, preproc, all]");
@@ -248,6 +253,11 @@ document.addEventListener("DOMContentLoaded", function () {
                             .then(data => {
                                 if (data.status === 'success' && data.image_base64) {
                                     img.src = `data:image/jpeg;base64,${data.image_base64}`;
+                                    // Добавляем в историю препроцессинга
+                                    preprocHistory.push({
+                                        method: method,
+                                        params: data.params || params
+                                    });
                                     appendToPlaygroundLog(`✅ Preprocessing method ${method} applied!\nParams: ${JSON.stringify(data.params)}`);
                                 } else {
                                     appendToPlaygroundLog(`🛑 Preprocessing error: ${data.error || 'Unknown error'}`);
@@ -262,6 +272,22 @@ document.addEventListener("DOMContentLoaded", function () {
                 else if (command === "help") {
                     appendToPlaygroundLog("🔗Opening commands and params info in a new tab...");
                     window.open('https://docs.google.com/document/d/10LXocIGpwtbXtbOFVqhC3_P-Sia7UjunlS3frc5V8M0/edit?usp=sharing', '_blank');
+                }
+                else if (command === "export preproc") {
+                    if (preprocHistory.length === 0) {
+                        appendToPlaygroundLog("🛑 Nothing to export. Preprocessing history is empty.");
+                        return;
+                    }
+
+                    const jsonString = JSON.stringify(preprocHistory, null, 2);
+                    const blob = new Blob([jsonString], { type: "application/json" });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement("a");
+                    a.href = url;
+                    a.download = "preprocessing_history.json";
+                    a.click();
+                    URL.revokeObjectURL(url);
+                    appendToPlaygroundLog("✅ Preprocessing history exported!");
                 }
                 else {
                     appendToPlaygroundLog("🛑 Unknown command!");

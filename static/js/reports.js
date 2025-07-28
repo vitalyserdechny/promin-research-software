@@ -43,7 +43,14 @@ document.addEventListener("DOMContentLoaded", function () {
                 const date = new Date(data.datetime_iso);
                 summary.innerHTML = `
                     <p><strong>Datetime:</strong> ${date.toLocaleString()}</p>
-                    <p><strong>Preprocessing pipeline:</strong> ${data.preprocessing_pipeline.join(', ')}</p>
+                    <p><strong>Preprocessing pipeline:</strong> ${data.preprocessing_pipeline.map(step => {
+                    let paramsStr = '';
+                    const keys = Object.keys(step.params);
+                    if (keys.length > 0) {
+                        paramsStr = ' (' + keys.map(k => `${k}: ${step.params[k]}`).join(', ') + ')';
+                    }
+                    return step.method + paramsStr;
+                }).join(' → ')}</p>
                     <p><strong>Models:</strong> ${data.models?.join(', ') || '—'}</p>
                 `;
 

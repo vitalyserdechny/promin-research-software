@@ -452,58 +452,63 @@ def run_analysis():
     '''
     Run analysis route (POST request initiated from the client by starting analysis after frames are annotated)
     '''
-    data = request.get_json()
-    models = data.get('models', [])
-    preproc_pipeline = data.get('preprocessing_pipeline', [])
+    try:
+        data = request.get_json()
+        models = data.get('models', [])
+        preproc_pipeline = data.get('preprocessing_pipeline', [])
 
-    logging.info(f"Running analysis with models: {models}")
-    logging.info(f"Preprocessing pipeline:\n {preproc_pipeline}")
+        logging.info(f"Running analysis with models: {models}")
+        logging.info(f"Preprocessing pipeline:\n {preproc_pipeline}")
 
-    frames_folder = os.path.join(app.config['CURRENT_PROJECT_DIR'], FRAMES_DIR)
-    analysis_folder = os.path.join(app.config['CURRENT_PROJECT_DIR'], ANALYSIS_DIR)
-    if not os.path.exists(analysis_folder):
-        os.makedirs(analysis_folder)
+        frames_folder = os.path.join(app.config['CURRENT_PROJECT_DIR'], FRAMES_DIR)
+        analysis_folder = os.path.join(app.config['CURRENT_PROJECT_DIR'], ANALYSIS_DIR)
+        if not os.path.exists(analysis_folder):
+            os.makedirs(analysis_folder)
 
-    frame_paths = sorted(glob.glob(os.path.join(frames_folder, '*.jpg')))
-    total_frames = len(frame_paths)
+        frame_paths = sorted(glob.glob(os.path.join(frames_folder, '*.jpg')))
+        total_frames = len(frame_paths)
 
-    timestamp = datetime.datetime.now().strftime('%Y%m%d_%H%M%S')
-    analysis_file_name = f"analysis_result_{timestamp}.json"
-    analysis_results_file = os.path.join(analysis_folder, analysis_file_name)
+        timestamp = datetime.datetime.now().strftime('%Y%m%d_%H%M%S')
+        analysis_file_name = f"analysis_result_{timestamp}.json"
+        analysis_results_file = os.path.join(analysis_folder, analysis_file_name)
 
-    results = {}
+        results = {}
 
-    for model in models:
-        logging.info(f"Calculating annotations and metrics for {model}")
-        detector = None
-        for key in DETECTOR_CONFIG:
-            if key in model:
-                detector = DETECTOR_CONFIG[key](model)
-                break
-        if not detector:
-            logging.error(f"Unknown model type in {model}. Skipping analysis for this model.")
-            continue
+        for model in models:
+            logging.info(f"Calculating annotations and metrics for {model}")
+            detector = None
+            for key in DETECTOR_CONFIG:
+                if key in model:
+                    detector = DETECTOR_CONFIG[key](model)
+                    break
+            if not detector:
+                logging.error(f"Unknown model type in {model}. Skipping analysis for this model.")
+                continue
 
-        model_folder = os.path.join(analysis_folder, model)
-        os.makedirs(model_folder, exist_ok=True)
+            model_folder = os.path.join(analysis_folder, model)
+            os.makedirs(model_folder, exist_ok=True)
 
-        fps = process_model(model, detector, frame_paths, model_folder, total_frames, preproc_pipeline)
+            fps = process_model(model, detector, frame_paths, model_folder, total_frames, preproc_pipeline)
 
-        socketio.emit('analysis-progress-update', {'message': f'Calculating metrics for {model}', 'step': 2})
-        annotations_folder = os.path.join(app.config['CURRENT_PROJECT_DIR'], 'object-detections')
-        metrics = calculate_metrics(annotations_folder, model_folder)
-        results[model] = {'FPS': fps, **metrics}
+            socketio.emit('analysis-progress-update', {'message': f'Calculating metrics for {model}', 'step': 2})
+            annotations_folder = os.path.join(app.config['CURRENT_PROJECT_DIR'], 'object-detections')
+            metrics = calculate_metrics(annotations_folder, model_folder)
+            results[model] = {'FPS': fps, **metrics}
 
-    analysis_metadata = {
-        "timestamp": timestamp,
-        "datetime_iso": datetime.datetime.now().isoformat(),
-        "models": models,
-        "preprocessing_pipeline": preproc_pipeline, 
-        "results": results
-    }
+        analysis_metadata = {
+            "timestamp": timestamp,
+            "datetime_iso": datetime.datetime.now().isoformat(),
+            "models": models,
+            "preprocessing_pipeline": preproc_pipeline, 
+            "results": results
+        }
 
-    with open(analysis_results_file, 'w') as f:
-        json.dump(analysis_metadata, f, indent=4)
+        with open(analysis_results_file, 'w') as f:
+            json.dump(analysis_metadata, f, indent=4)
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return jsonify({'error': str(e)}), 500 
 
     return jsonify(results)
 

@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <title>PROMIN - an open-source utility for computer vision research</title>
-    
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Ponomar&display=swap" rel="stylesheet">
@@ -189,10 +189,9 @@
             </div>
             <div id="preproc-selection">
                 <h3>Preprocessing pipeline 🛠️:</h3>
-                <label for="preproc-file-input">Upload preprocessing pipeline (.txt):</label><br>
-                <input type="file" id="preproc-file-input" accept=".txt"><br><br>
-                <textarea id="preproc-textarea" rows="6" cols="60" placeholder="Pipeline will appear here..."
-                    readonly></textarea>
+                <label for="preproc-file-input">Upload preprocessing pipeline (.json):</label><br>
+                <input type="file" id="preproc-file-input" accept=".json"><br>
+                <button id="show-preproc-scheme-btn" type="button" class="single-pretty-button">👁️ Show Preprocessing Pipeline Scheme</button><br>
             </div>
             <button id="run-analysis-btn" class="run-analysis-btn">Start Analysis ▶️</button>
             <div id="analysis-process">
@@ -216,6 +215,14 @@
                 <button id="analysis-done-btn">OK!</button>
             </div>
         </div>
+    </div>
+
+    <div id="preproc-scheme-modal" class="message-box">
+        <h2>Preprocessing pipeline:</h2>
+        <div id="canvas-container" style="overflow-x: auto; width: 100%;">
+            <canvas id="preproc-canvas" height="180"></canvas>
+        </div>
+        <button class="ok-button" id="preproc-scheme-modal-ok-btn">OK</button>
     </div>
 
     <div id="message-box" class="message-box">
