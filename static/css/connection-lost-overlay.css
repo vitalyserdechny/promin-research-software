@@ -1,0 +1,35 @@
+.connection-lost-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(10, 10, 10, 0.6);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 99999; /* выше всех остальных окон */
+}
+
+.connection-lost-box {
+  background: rgba(0, 0, 0, 0.7);
+  padding: 32px 48px;
+  border-radius: 16px;
+  text-align: center;
+  color: white;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+}
+
+.connection-lost-icon {
+  width: 64px;
+  height: 64px;
+  margin-bottom: 16px;
+  opacity: 0.8;
+}
+
+.connection-lost-text {
+  font-size: 20px;
+  font-weight: 500;
+}

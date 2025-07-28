@@ -95,6 +95,10 @@ def index():
     app.config['PROJECTS_INFO'] = projects
     return render_template('index.html')
 
+@app.route("/ping")
+def ping():
+    return "", 200
+
 @app.route('/get-projects')
 def get_projects():
     return jsonify(app.config['PROJECTS_INFO'])

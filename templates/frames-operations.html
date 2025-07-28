@@ -16,6 +16,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Audiowide&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../static/css/connection-lost-overlay.css">
     <link rel="stylesheet" href="../static/css/frames-operations.css">
     <link rel="stylesheet" href="../static/css/messagebox.css">
     <link rel="icon" href="../static/images/favicon_new.ico" type="image/x-icon">
@@ -246,6 +247,13 @@
         </div>
     </div>
 
+    <div id="connection-lost-overlay" class="connection-lost-overlay" style="display: none;">
+        <div class="connection-lost-box">
+            <img src="/static/images/no-internet.png" alt="No connection" class="connection-lost-icon" />
+            <p class="connection-lost-text">Connection to the server has been lost</p>
+        </div>
+    </div>
+
     <script src="https://unpkg.com/@dotlottie/player-component@2.7.12/dist/dotlottie-player.mjs" type="module"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.socket.io/4.0.1/socket.io.min.js"></script>
@@ -258,6 +266,7 @@
     <script src="../static/js/reports.js"></script>
     <script src="../static/js/playground.js"></script>
     <script src="../static/js/analysis.js"></script>
+    <script src="../static/js/connections-lost-overlay.js"></script>
     <script src="../static/js/project-page.js"></script>
 </body>
 

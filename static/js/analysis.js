@@ -53,10 +53,6 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     });
 
-    socket.on('connect_error', () => {
-        alert("Connection lost 😵 Please check your server 👨‍🔧");
-    });
-
     // mode может быть "analysis_setup", "analysis_process" или "analysis_finished"
     function toggleView(mode) {
         if (mode == "analysis_setup") {
