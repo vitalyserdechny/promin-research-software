@@ -1,17 +1,19 @@
-import os
+import os, logging
 import cv2
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
 import numpy as np
 import torchvision.transforms as transforms
 from PIL import Image
 
-# Zero-DCE модель
+# DCE-Net модель 
+# В соответствии с оригинальной реализацией Zero-DCE
+# https://arxiv.org/abs/2001.06826
+
 class DCENet(nn.Module):
     def __init__(self):
-        super(DCENet, self).__init__()       
-        # Encoder
+        super(DCENet, self).__init__()     
+         
         self.relu = nn.ReLU(inplace=True)
         self.e_conv1 = nn.Conv2d(3, 32, 3, 1, 1, bias=True) 
         self.e_conv2 = nn.Conv2d(32, 32, 3, 1, 1, bias=True) 
@@ -20,9 +22,6 @@ class DCENet(nn.Module):
         self.e_conv5 = nn.Conv2d(32 * 2, 32, 3, 1, 1, bias=True) 
         self.e_conv6 = nn.Conv2d(32 * 2, 32, 3, 1, 1, bias=True) 
         self.e_conv7 = nn.Conv2d(32 * 2, 24, 3, 1, 1, bias=True)
-        
-        self.maxpool = nn.MaxPool2d(2, stride=2, return_indices=False, ceil_mode=False)
-        self.upsample = nn.UpsamplingBilinear2d(scale_factor=2)
 
     def forward(self, x):
         x1 = self.relu(self.e_conv1(x))
@@ -41,68 +40,41 @@ class ZeroDCEProcessor:
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         self.model = DCENet().to(self.device)
         
-        # Автоматически загружаем предобученную модель
         if model_path and os.path.exists(model_path):
-            print(f"Загружаем предобученную модель: {model_path}")
+            logging.info(f"Loading a pre-trained model: {model_path}")
             checkpoint = torch.load(model_path, map_location=self.device)
             self.model.load_state_dict(checkpoint)
-            print("Модель успешно загружена!")
+            print("The model has been loaded!")
         else:
-            print(f"ВНИМАНИЕ: Модель {model_path} не найдена. Скачайте Epoch99.pth из репозитория Zero-DCE")
+            logging.error(f"ERROR: Model {model_path} not found!")
         
         self.model.eval()
         
-        # Transforms для обработки изображений
         self.transform = transforms.Compose([
             transforms.ToTensor()
         ])
 
     def enhance_image(self, cv_image):
-        """
-        Обрабатывает изображение OpenCV и возвращает улучшенное изображение
-            
-        Args:
-            cv_image: изображение в формате OpenCV (BGR)
-                
-        Returns:
-                nhanced_image: улучшенное изображение в формате OpenCV (BGR)
-        """
         try:
-            # Конвертируем BGR в RGB
             rgb_image = cv2.cvtColor(cv_image, cv2.COLOR_BGR2RGB)
-                
-            # Нормализуем изображение
-            rgb_image = rgb_image.astype(np.float32) / 255.0
-                
-            # Конвертируем в PIL для transforms
-            pil_image = Image.fromarray((rgb_image * 255).astype(np.uint8))
-                
-            # Применяем transforms
+            pil_image = Image.fromarray(rgb_image)
             input_tensor = self.transform(pil_image).unsqueeze(0).to(self.device)
                 
             with torch.no_grad():
-                # Получаем enhancement maps
                 enhanced_maps = self.model(input_tensor)
-                    
-                # Применяем enhancement
                 enhanced_image = self.apply_enhancement(input_tensor, enhanced_maps)
                     
-                # Конвертируем обратно в numpy
                 enhanced_np = enhanced_image.squeeze(0).cpu().numpy()
                 enhanced_np = np.transpose(enhanced_np, (1, 2, 0))
                 enhanced_np = np.clip(enhanced_np * 255, 0, 255).astype(np.uint8)
                     
-                # Конвертируем RGB обратно в BGR для OpenCV
                 enhanced_bgr = cv2.cvtColor(enhanced_np, cv2.COLOR_RGB2BGR)
-                    
-                return enhanced_bgr
-                    
+                return enhanced_bgr             
         except Exception as e:
-            print(f"Ошибка при обработке изображения: {e}")
-            return cv_image  # Возвращаем оригинальное изображение в случае ошибки
+            logging.error(f"Image processing error: {e}")
+            return cv_image  
     
     def apply_enhancement(self, image, enhancement_maps):
-        """Применяет enhancement maps к изображению"""
         enhanced = image
         for i in range(enhancement_maps.shape[1] // 3):
             r_map = enhancement_maps[:, i*3:(i+1)*3, :, :]

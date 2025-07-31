@@ -1,8 +1,14 @@
 import cv2, torch
 import numpy as np
+import torch.nn.functional as F
 
 from neural_models.zerodce import ZeroDCEProcessor
-from neural_models.deblurganv2 import DeblurGANv2Processor
+
+zero_dce_processor = None
+
+def init_nn_processors():
+    global zero_dce_processor
+    zero_dce_processor = ZeroDCEProcessor()
 
 def get_dark_channel(image, window_size):
     """
@@ -238,10 +244,9 @@ def apply_preproc(frame, preproc_method, **params):
         enhanced_image_bgr = cv2.cvtColor(enhanced_image, cv2.COLOR_RGB2BGR)
         return enhanced_image_bgr, final_params
         '''
-        processor = ZeroDCEProcessor()
-        enhanced_image_bgr = processor.enhance_image(frame)
+        global zero_dce_processor
+        enhanced_image_bgr = zero_dce_processor.enhance_image(frame)
         return enhanced_image_bgr, {}
-    
     # *****************************
     # Denoising Methods
     # *****************************

@@ -15,6 +15,7 @@ from flask import Flask, jsonify, render_template, request, redirect, send_from_
 from flask_socketio import SocketIO
 
 from config import *
+from preproc import init_nn_processors
 # ---------------------------------------------------------------------------------------
 
 # 2. FLASK Application & Socket Setup 
@@ -729,4 +730,6 @@ def upload_video():
 # 5. Main Application Logic
 
 if __name__ == '__main__':
+    init_nn_processors()
     app.run(debug=True)
+    
