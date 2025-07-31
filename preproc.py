@@ -1,8 +1,7 @@
-import cv2, torch
+import cv2
 import numpy as np
-import torch.nn.functional as F
 
-from neural_models.zerodce import ZeroDCEProcessor
+from neural_models.zerodce.zerodce import ZeroDCEProcessor
 
 zero_dce_processor = None
 
