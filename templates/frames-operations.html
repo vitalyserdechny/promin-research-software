@@ -191,11 +191,11 @@
                 <h3>Последовність препроцесінга 🛠️:</h3>
                 <label for="preproc-file-input">Завантажити файл пайплайна (.json):</label><br>
                 <input type="file" id="preproc-file-input" accept=".json"><br>
-                <button id="show-preproc-scheme-btn" type="button" class="single-pretty-button">👁️ Показати схему препроцесінга</button><br>
+                <button id="show-preproc-scheme-btn" type="button" class="single-pretty-button">👁️ Показати пайплайн препроцесінга</button><br>
             </div>
-            <button id="run-analysis-btn" class="run-analysis-btn">Start Analysis ▶️</button>
+            <button id="run-analysis-btn" class="run-analysis-btn">Розпочати аналіз ▶️</button>
             <div id="analysis-process">
-                <h3 id="analysis-welcome-text">While the analysis is running, grab a beer, buddy 🥴🍻</h3>
+                <h3 id="analysis-welcome-text">Зараз відбувається магія і трошки аналіза</h3>
                 <dotlottie-player id="analysis-loader"
                     src="https://lottie.host/daa85c4f-630f-4c0b-8e7c-318f4ff57144/oNaOJbftGi.lottie"
                     background="transparent" speed="1" style="width: 300px; height: 300px" loop
@@ -211,14 +211,14 @@
             </div>
             <div id="analysis-done-div">
                 <h1>✅</h1>
-                <h2>Analysis done!</h2>
-                <button id="analysis-done-btn">OK!</button>
+                <h2>Аналіз завершено!</h2>
+                <button id="analysis-done-btn">OK</button>
             </div>
         </div>
     </div>
 
     <div id="preproc-scheme-modal" class="message-box">
-        <h2>Preprocessing pipeline:</h2>
+        <h2>Пайплайн препроцесінга:</h2>
         <div id="canvas-container" style="overflow-x: auto; width: 100%;">
             <canvas id="preproc-canvas" height="180"></canvas>
         </div>
@@ -228,7 +228,7 @@
     <div id="message-box" class="message-box">
         <div class="message-content">
             <img src="https://cdn-icons-png.flaticon.com/512/190/190411.png" alt="Info Icon" class="message-icon" />
-            <p class="message-text">Это информационное сообщение для пользователя.</p>
+            <p class="message-text">Це інформаційне повідомлення для користувача.</p>
         </div>
         <button class="ok-button" id="message-box-ok-btn">ОК</button>
     </div>
@@ -236,11 +236,11 @@
     <div id="confirm-box" class="message-box" style="display:none;">
         <div class="message-content">
             <img src="../static/images/quest.png" alt="Confirm Icon" class="message-icon" />
-            <p class="message-text" id="confirm-text">Подтвердите действие</p>
+            <p class="message-text" id="confirm-text">Підтвердження дії</p>
         </div>
         <div style="display: flex; justify-content: center; gap: 16px;">
             <button class="ok-button" id="confirm-ok-btn">OK</button>
-            <button class="ok-button" id="confirm-cancel-btn" style="background-color:#d9534f;">Cancel</button>
+            <button class="ok-button" id="confirm-cancel-btn" style="background-color:#d9534f;">Відмінити</button>
         </div>
     </div>
 
@@ -248,21 +248,21 @@
         <div class="message-content">
             <img src="../static/images/enter.png" alt="Prompt Icon" class="message-icon" />
             <div style="flex: 1; text-align: left;">
-                <p class="message-text" id="prompt-text">Your content:</p>
+                <p class="message-text" id="prompt-text">Ваш вміст:</p>
                 <input type="text" id="prompt-input"
                     style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #ccc; margin-top: 8px; font-size: 16px;" />
             </div>
         </div>
         <div style="display: flex; justify-content: center; gap: 16px;">
             <button class="ok-button" id="prompt-ok-btn">OK</button>
-            <button class="ok-button" id="prompt-cancel-btn" style="background-color:#d9534f;">Cancel</button>
+            <button class="ok-button" id="prompt-cancel-btn" style="background-color:#d9534f;">Відмінити</button>
         </div>
     </div>
 
     <div id="connection-lost-overlay" class="connection-lost-overlay" style="display: none;">
         <div class="connection-lost-box">
             <img src="/static/images/no-internet.png" alt="No connection" class="connection-lost-icon" />
-            <p class="connection-lost-text">Connection to the server has been lost</p>
+            <p class="connection-lost-text">З'єднання із сервером втрачено</p>
         </div>
     </div>
 
