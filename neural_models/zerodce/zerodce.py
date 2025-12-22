@@ -6,8 +6,8 @@ import numpy as np
 import torchvision.transforms as transforms
 from PIL import Image
 
-from lowlight_dataset import LowLightDataset
-from loss_calculator import LossCalculator
+from neural_models.zerodce.lowlight_dataset import LowLightDataset
+from neural_models.zerodce.loss_calculator import LossCalculator
 
 from torch.utils.data import DataLoader
 

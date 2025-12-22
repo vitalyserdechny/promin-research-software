@@ -39,11 +39,11 @@ document.addEventListener('DOMContentLoaded', function () {
                 projectsSelect.innerHTML = ''
                 if (projects.length === 0) {
                     projectsSelect.style.display = 'none'
-                    projectSelectLabel.innerText = 'No Projects Yet (-_-)'
+                    projectSelectLabel.innerText = 'Поки що тут порожньо 🥺'
                     openProjectSubmitBtn.style.display = 'none'
                 } else {
                     projectsSelect.style.display = 'block'
-                    projectSelectLabel.innerText = 'Choose project to open: '
+                    projectSelectLabel.innerText = 'Оберіть проект для відкриття: '
                     openProjectSubmitBtn.style.display = 'block'
                 }
 

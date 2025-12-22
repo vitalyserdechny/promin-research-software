@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>PROMIN - an open-source utility for computer vision research</title>
+    <title>PROMIN - утіліта для досліджень у галузі CV з відкритим кодом</title>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -32,29 +32,29 @@
 <body>
     <div id="loading-panel" class="loading-panel">
         <div class="loading-spinner"></div>
-        <p>Loading...</p>
+        <p>Завантаження...</p>
     </div>
 
     <header>
         <nav class="navbar">
             <ul class="nav-menu">
                 <li class="nav-item dropdown">
-                    <a href="#">🗂️ Project ▾</a>
+                    <a href="#">🗂️ Проект ▾</a>
                     <ul class="dropdown-menu">
-                        <li><a href="#" id="save-project-btn">💾 Save</a></li>
-                        <li><a href="#" id="close-project-btn">🔴 Close</a></li>
+                        <li><a href="#" id="save-project-btn">💾 Зберегти</a></li>
+                        <li><a href="#" id="close-project-btn">🔴 Закрити</a></li>
                     </ul>
                 </li>
                 <li class="nav-item dropdown">
-                    <a href="#">🚀 Analysis ▾</a>
+                    <a href="#">🚀 Аналіз ▾</a>
                     <ul class="dropdown-menu">
-                        <li><a href="#" id="models-analysis-btn">📈 New Analysis</a></li>
-                        <li><a href="#" id="get-reports-btn">📋 Reports</a></li>
+                        <li><a href="#" id="models-analysis-btn">📈 Новий аналіз</a></li>
+                        <li><a href="#" id="get-reports-btn">📋 Звіти</a></li>
                     </ul>
                 </li>
-                <li class="nav-item"><a href="#" id="enter_playground_btn">🎮 Playground</a></li>
-                <li class="nav-item"><a href="#" id="cuda_status_btn">🧮 CUDA status</a></li>
-                <li class="nav-item"><a href="#">ℹ️ Help</a></li>
+                <li class="nav-item"><a href="#" id="enter_playground_btn">🎮 Пісочниця</a></li>
+                <li class="nav-item"><a href="#" id="cuda_status_btn">🧮 CUDA статус</a></li>
+                <li class="nav-item"><a href="#">ℹ️ Допомога</a></li>
             </ul>
         </nav>
     </header>
@@ -62,7 +62,7 @@
     <main>
         <div class="frame-viewer" id="frame-viewer">
             <div class="frame-viewer-header">
-                <h2>Frame #<span id="frame-number">4</span></h2>
+                <h2>Кадр #<span id="frame-number">4</span></h2>
             </div>
             <div class="image-container" id="image-container">
                 <img src="" alt="Frame Image" id="frame-image">
@@ -71,16 +71,16 @@
         </div>
         <div id="bounding-boxes-list">
             <div id="bounding-boxes-list-control-container">
-                <h3>Bounding boxes:</h3>
+                <h3>Об'єкти:</h3>
                 <div id="bounding-boxes-list-control-buttons">
-                    <button id="add-bounding-box-btn" class="add-bounding-box-btn">Add ❇️</button>
-                    <button id="paste-bounding-box-btn" class="paste-bounding-box-btn-inactive">Paste 📋</button>
+                    <button id="add-bounding-box-btn" class="add-bounding-box-btn">Додати</button>
+                    <button id="paste-bounding-box-btn" class="paste-bounding-box-btn-inactive">Вставити</button>
                 </div>
             </div>
             <div id="bounding-boxes-values"></div>
         </div>
         <div class="classes-and-colors" id="classes-and-colors">
-            <h3>Classes:</h3>
+            <h3>Класи:</h3>
             <div id="classes-and-colors-list"></div>
         </div>
     </main>
@@ -97,7 +97,7 @@
 
     <div id="playground-panel" class="playground-panel">
         <div id="playground-panel-header" class="playground-panel-header">
-            <h2>Playground 🎮</h2>
+            <h2>Пісочниця 🎮</h2>
             <button id="close-playground-panel-btn" class="close-playground-panel-btn">❌</button>
         </div>
         <div id="playground-panel-content" class="playground-panel-content">
@@ -121,18 +121,18 @@
 
     <div id="select-report-panel" class="select-report-panel">
         <div id="select-report-panel-header" class="select-report-panel-header">
-            <h2>Select Report 📈</h2>
+            <h2>Обрати звіт 📈</h2>
             <button id="close-select-report-panel-btn" class="close-select-report-panel-btn">❌</button>
         </div>
         <div id="select-report-panel-content" class="select-report-panel-content">
             <select id="report-selector"></select>
-            <button id="select-report-btn" class="run-analysis-btn">View Report 👀</button>
+            <button id="select-report-btn" class="run-analysis-btn">Подивитися звіт 👀</button>
         </div>
     </div>
 
     <div id="view-report-panel" class="view-report-panel">
         <div id="view-report-panel-header" class="view-report-panel-header">
-            <h2>View Report 📈</h2>
+            <h2>Подивитися звіт 📈</h2>
             <button id="close-view-report-panel-btn" class="close-view-report-panel-btn">❌</button>
         </div>
         <div id="view-report-panel-content" class="view-report-panel-content">
@@ -141,13 +141,13 @@
 
     <div id="analysis-panel" class="analysis-panel">
         <div id="analysis-panel-header" class="analysis-panel-header">
-            <h2>Analysis 📈</h2>
+            <h2>Аналіз 📈</h2>
             <button id="close-analysis-panel-btn" class="close-analysis-panel-btn">❌</button>
         </div>
         <div id="analysis-panel-content" class="analysis-panel-content">
-            <h3 class="outside-div-elems">Models 🤖:</h3>
+            <h3 class="outside-div-elems">Моделі 🤖:</h3>
             <label class="outside-div-elems"><input class="outside-div-elems" type="checkbox" name="select_all_models"
-                    value="select_all" id="select_all_models">Select All</label><br>
+                    value="select_all" id="select_all_models">Обрати всі</label><br>
             <div id="model-selection">
                 <div>
                     <label><input type="checkbox" name="model" value="yolo_11_x"> YOLOv11(x)</label><br>
@@ -188,10 +188,10 @@
                 </div>
             </div>
             <div id="preproc-selection">
-                <h3>Preprocessing pipeline 🛠️:</h3>
-                <label for="preproc-file-input">Upload preprocessing pipeline (.json):</label><br>
+                <h3>Последовність препроцесінга 🛠️:</h3>
+                <label for="preproc-file-input">Завантажити файл пайплайна (.json):</label><br>
                 <input type="file" id="preproc-file-input" accept=".json"><br>
-                <button id="show-preproc-scheme-btn" type="button" class="single-pretty-button">👁️ Show Preprocessing Pipeline Scheme</button><br>
+                <button id="show-preproc-scheme-btn" type="button" class="single-pretty-button">👁️ Показати схему препроцесінга</button><br>
             </div>
             <button id="run-analysis-btn" class="run-analysis-btn">Start Analysis ▶️</button>
             <div id="analysis-process">

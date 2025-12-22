@@ -3,7 +3,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const statusMessage = document.getElementById('status-message');
     const progressBar = document.getElementById('progress-bar')
     socket.on('video-processing-progress', function(data) {
-        statusMessage.innerText = 'Вилучення кадрів з відео: ' + data.frame + '/' + data.total_frames
+        statusMessage.innerText = 'Вилучення кадрів з відеофайлу: ' + data.frame + '/' + data.total_frames
         progressBar.style.width = data.progress + '%'
     })
     
