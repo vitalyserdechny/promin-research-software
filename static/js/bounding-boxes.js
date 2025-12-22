@@ -18,7 +18,13 @@
 let resizing = false;
 let currentAnnotation, startX, startY, startWidth, startHeight, startLeft, startTop, resizeDir;
 
+let isMoving = false;
+let moveStartX, moveStartY;
+let moveStartLeft, moveStartTop;
+
 let bufferAnnotationsData = null;
+
+let contextMenuTargetIndex = null;
 
 function drawBoundingBoxes(annotations) {
     const boxesContainer = document.getElementById("bounding-boxes");
@@ -46,6 +52,16 @@ function drawBoundingBoxes(annotations) {
         box.style.top = `${boxTop}px`;
         box.style.width = `${boxWidth}px`;
         box.style.height = `${boxHeight}px`;
+
+        box.style.cursor = "move";
+        box.addEventListener("mousedown", startMove);
+        box.addEventListener("contextmenu", function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+
+            contextMenuTargetIndex = index;
+            showContextMenu(e.clientX, e.clientY);
+        });
 
         // Устанавливаем цвет рамки на основе класса
         if (window.classesAndColors && window.classesAndColors[ann.label]) {
@@ -92,7 +108,6 @@ function drawBoundingBoxes(annotations) {
 
 function updateBoundingBoxList(annotations) {
     const listContainer = document.getElementById("bounding-boxes-values");
-    const pasteBoundingBoxButton = document.getElementById("paste-bounding-box-btn");
 
     listContainer.innerHTML = "";
 
@@ -100,16 +115,11 @@ function updateBoundingBoxList(annotations) {
         let item = document.createElement("div");
         item.className = "bounding-box-item";
         item.innerHTML = `
-        <strong>Bounding Box #${index + 1}</strong>
-        <span><strong>Label:</strong> ${ann.label}</span>
-        <span><strong>Position:</strong> x: ${ann.x.toFixed(4)}, y: ${ann.y.toFixed(4)}</span>
-        <span><strong>Size:</strong> w: ${ann.width.toFixed(4)}, h: ${ann.height.toFixed(4)}</span>
-        <span><strong>Confidence:</strong> ${ann.confidence.toFixed(4)}</span>
-        <div class="box-actions">
-            <button class="edit-label" data-index="${index}">Change label ✏️</button>
-            <button class="delete-box" data-index="${index}">Delete 🗑️</button>
-            <button class="copy-box" data-index="${index}">Copy 📋</button>
-        </div>
+        <strong>Об'єкт #${index + 1}</strong>
+        <span><strong>Клас:</strong> ${ann.label}</span>
+        <span><strong>Позиція:</strong> x: ${ann.x.toFixed(4)}, y: ${ann.y.toFixed(4)}</span>
+        <span><strong>Розмір:</strong> w: ${ann.width.toFixed(4)}, h: ${ann.height.toFixed(4)}</span>
+        <span><strong>Впевненість:</strong> ${ann.confidence.toFixed(4)}</span>
     `;
 
         item.addEventListener("mouseenter", function () {
@@ -121,79 +131,6 @@ function updateBoundingBoxList(annotations) {
         });
 
         listContainer.appendChild(item);
-    });
-
-    document.querySelectorAll(".copy-box").forEach(btn => {
-        btn.addEventListener("click", function () {
-            if (!bufferAnnotationsData) {
-                pasteBoundingBoxButton.classList.remove("paste-bounding-box-btn-inactive");
-                pasteBoundingBoxButton.classList.add("paste-bounding-box-btn-active");
-            }
-            const index = parseInt(btn.dataset.index);
-            const frameIndex = parseInt(document.getElementById("frame-number").textContent);
-            const frameData = allFrames.find(f => f.frame_index === frameIndex);
-
-            if (!frameData) return;
-
-            bufferAnnotationsData = frameData.annotations[index];
-        });
-    });
-
-    document.querySelectorAll(".delete-box").forEach(btn => {
-        btn.addEventListener("click", function () {
-            const index = parseInt(btn.dataset.index);
-
-            showConfirmBox("Do you really want to delete this bounding box?", function (confirmed) {
-                if (!confirmed) return;
-
-                // Если в кадрах такой класс больше не встречается, удалить его из classesAndColors
-                const frameIndex = parseInt(document.getElementById("frame-number").textContent);
-                const frameData = allFrames.find(f => f.frame_index === frameIndex);
-                const label = frameData.annotations[index].label;
-                const labelOccurences = allFrames.map(f => f.annotations).flat().filter(a => a.label === label).length;
-
-                if (labelOccurences === 1) {
-                    delete window.classesAndColors[label];
-                    displayClassesAndColors(window.classesAndColors);
-                }
-
-                annotations.splice(index, 1);
-                drawBoundingBoxes(annotations);
-                updateBoundingBoxList(annotations);
-            });
-        })
-    });
-
-    document.querySelectorAll(".edit-label").forEach(btn => {
-        btn.addEventListener("click", function () {
-            const index = parseInt(btn.dataset.index);
-            showPromptBox("Enter a new class for this bounding box:", annotations[index].label, function (result) {
-                if (result.confirmed) {
-                    const newLabel = result.value.trim();
-                    const oldLabel = annotations[index].label;
-
-                    if (newLabel !== null && newLabel.trim() !== "") {
-                        annotations[index].label = newLabel.trim();
-                        drawBoundingBoxes(annotations);
-                        updateBoundingBoxList(annotations);
-
-                        // Если после изменения у нас появился новый класс, которого раньше не было, добавить его в classesAndColors
-                        if (!window.classesAndColors[newLabel]) {
-                            window.classesAndColors[newLabel] = [Math.floor(Math.random() * 256), Math.floor(Math.random() * 256), Math.floor(Math.random() * 256)];
-                            displayClassesAndColors(window.classesAndColors);
-                        }
-
-                        // Если в кадрах такой класс больше не встречается, удалить его из classesAndColors
-                        const labelOccurences = allFrames.map(f => f.annotations).flat().filter(a => a.label === oldLabel).length;
-
-                        if (labelOccurences === 1) {
-                            delete window.classesAndColors[oldLabel];
-                            displayClassesAndColors(window.classesAndColors);
-                        }
-                    }
-                }
-            });
-        });
     });
 }
 
@@ -225,9 +162,12 @@ function startResize(e) {
 function resizeBoundingBox(e) {
     if (!resizing) return;
 
+    const currentScale = (window.transformState && window.transformState.scale) ? window.transformState.scale : 1;
+
     const image = document.getElementById("frame-image");
-    const dx = e.clientX - startX;
-    const dy = e.clientY - startY;
+
+    const dx = (e.clientX - startX) / currentScale;
+    const dy = (e.clientY - startY) / currentScale;
 
     let newWidth = startWidth;
     let newHeight = startHeight;
@@ -286,28 +226,141 @@ function stopResize() {
     window.removeEventListener("mouseup", stopResize);
 }
 
+/*
+==========================================================
+ПЕРЕМЕЩЕНИЕ
+==========================================================
+*/
+
+function startMove(e) {
+    // 1. Если кликнули по ручке ресайза — выходим, пусть работает startResize
+    if (e.target.classList.contains('resize-handle')) return;
+    // 2. Останавливаем всплытие, чтобы не сработал Drag & Drop самой картинки (панорамирование)
+    e.stopPropagation();
+
+    isMoving = true;
+    const index = parseInt(e.currentTarget.dataset.index); // e.currentTarget - это сам .bounding-box
+
+    const frameIndex = parseInt(document.getElementById("frame-number").textContent);
+    const frameData = allFrames.find(f => f.frame_index === frameIndex);
+    if (!frameData) return;
+
+    currentAnnotation = frameData.annotations[index];
+
+    const image = document.getElementById("frame-image");
+
+    // Запоминаем, где нажали мышкой
+    moveStartX = e.clientX;
+    moveStartY = e.clientY;
+
+    // Считаем текущую позицию левого верхнего угла в пикселях
+    moveStartLeft = (currentAnnotation.x - currentAnnotation.width / 2) * image.width;
+    moveStartTop = (currentAnnotation.y - currentAnnotation.height / 2) * image.height;
+
+    // Вешаем глобальные слушатели
+    window.addEventListener("mousemove", moveBoundingBox);
+    window.addEventListener("mouseup", stopMove);
+}
+
+function moveBoundingBox(e) {
+    if (!isMoving) return;
+
+    // 1. Получаем текущий масштаб (как мы делали в ресайзе)
+    const currentScale = (window.transformState && window.transformState.scale) ? window.transformState.scale : 1;
+
+    const image = document.getElementById("frame-image");
+
+    // 2. Считаем смещение с учетом зума!
+    const dx = (e.clientX - moveStartX) / currentScale;
+    const dy = (e.clientY - moveStartY) / currentScale;
+
+    // Новые координаты левого верхнего угла
+    let newLeft = moveStartLeft + dx;
+    let newTop = moveStartTop + dy;
+
+    // Текущие размеры бокса в пикселях (они не меняются при муве)
+    const boxWidth = currentAnnotation.width * image.width;
+    const boxHeight = currentAnnotation.height * image.height;
+
+    // 3. Проверка границ (Boundary Check)
+    // Не даем уйти влево за 0
+    if (newLeft < 0) newLeft = 0;
+    // Не даем уйти вправо за ширину картинки
+    if (newLeft + boxWidth > image.width) newLeft = image.width - boxWidth;
+
+    // Не даем уйти вверх за 0
+    if (newTop < 0) newTop = 0;
+    // Не даем уйти вниз за высоту картинки
+    if (newTop + boxHeight > image.height) newTop = image.height - boxHeight;
+
+    // 4. Обновляем модель данных (переводим пиксели обратно в нормализованные 0..1)
+    // x = (left + half_width) / total_width
+    currentAnnotation.x = (newLeft + boxWidth / 2) / image.width;
+    currentAnnotation.y = (newTop + boxHeight / 2) / image.height;
+
+    // 5. Перерисовываем
+    const frameIndex = parseInt(document.getElementById("frame-number").textContent);
+    const frameData = allFrames.find(f => f.frame_index === frameIndex);
+
+    // Оптимизация: вместо полной перерисовки можно менять style.left/top у e.target,
+    // но drawBoundingBoxes надежнее обновляет всё, включая список справа
+    drawBoundingBoxes(frameData.annotations);
+    updateBoundingBoxList(frameData.annotations);
+}
+
+function stopMove() {
+    isMoving = false;
+    window.removeEventListener("mousemove", moveBoundingBox);
+    window.removeEventListener("mouseup", stopMove);
+}
+
+/*
+==========================================================
+КОНТЕКСТНОЕ МЕНЮ
+==========================================================
+*/
+const contextMenu = document.getElementById("context-menu-bb");
+
+function showContextMenu(x, y) {
+    contextMenu.style.display = "block";
+    contextMenu.style.left = `${x}px`;
+    contextMenu.style.top = `${y}px`;
+}
+
+function hideContextMenu() {
+    contextMenu.style.display = "none";
+    contextMenu.targetIndex = null;
+}
+
+document.addEventListener("click", hideContextMenu);
+document.addEventListener("wheel", hideContextMenu);
 
 document.addEventListener("DOMContentLoaded", function () {
 
     const addBoundingBoxButton = document.getElementById("add-bounding-box-btn");
-    const pasteBoundingBoxButton = document.getElementById("paste-bounding-box-btn");
 
-    pasteBoundingBoxButton.addEventListener("click", function () {
-        if (bufferAnnotationsData) {
-            const frameIndex = parseInt(document.getElementById("frame-number").textContent);
-            const frameData = allFrames.find(f => f.frame_index === frameIndex);
+    document.addEventListener('keydown', function (e) {
+        if ((e.ctrlKey || e.metaKey) && (e.code === 'KeyV' || e.key === 'v')) {
+            if (bufferAnnotationsData) {
+                const frameIndex = parseInt(document.getElementById("frame-number").textContent);
+                const frameData = allFrames.find(f => f.frame_index === frameIndex);
 
-            if (!frameData) return;
+                if (!frameData) return;
 
-            const newAnnotation = JSON.parse(JSON.stringify(bufferAnnotationsData));
-            frameData.annotations.push(newAnnotation);
-            drawBoundingBoxes(frameData.annotations);
-            updateBoundingBoxList(frameData.annotations);
+                const newAnnotation = JSON.parse(JSON.stringify(bufferAnnotationsData));
+                // Немного сдвигаем при вставке, чтобы было видно
+                newAnnotation.x += 0.01;
+                newAnnotation.y += 0.01;
+
+                frameData.annotations.push(newAnnotation);
+                drawBoundingBoxes(frameData.annotations);
+                updateBoundingBoxList(frameData.annotations);
+            }
         }
     });
 
     addBoundingBoxButton.addEventListener("click", function () {
-        showPromptBox("Enter the class name for the new bounding box:", "", function (result) {
+        showPromptBox("Введіть клас нового об'єкта:", "", function (result) {
             if (result.confirmed) {
                 const label = result.value.trim();
                 if (label !== null && label.trim() !== "") {
@@ -337,4 +390,127 @@ document.addEventListener("DOMContentLoaded", function () {
             }
         });
     });
+
+
+    // ==========================================================
+    // ЛОГИКА КОНТЕКСТНОГО МЕНЮ (НОВОЕ)
+    // ==========================================================
+
+    // 1. ИЗМЕНИТЬ КЛАСС (Context Menu)
+    const ctxChangeBtn = document.getElementById("ctx-bb-change-class");
+    if (ctxChangeBtn) {
+        ctxChangeBtn.addEventListener("click", function () {
+            if (contextMenuTargetIndex === null) return;
+
+            const frameIndex = parseInt(document.getElementById("frame-number").textContent);
+            const frameData = allFrames.find(f => f.frame_index === frameIndex);
+            const currentAnnotation = frameData.annotations[contextMenuTargetIndex];
+            const oldLabel = currentAnnotation.label;
+
+            showPromptBox("Введіть назву нового класа об'єкта:", oldLabel, function (result) {
+                if (result.confirmed) {
+                    const newLabel = result.value.trim();
+
+                    if (newLabel !== null && newLabel !== "") {
+                        // Обновляем метку
+                        currentAnnotation.label = newLabel;
+
+                        // Логика цветов (добавить новый)
+                        if (!window.classesAndColors[newLabel]) {
+                            window.classesAndColors[newLabel] = [Math.floor(Math.random() * 256), Math.floor(Math.random() * 256), Math.floor(Math.random() * 256)];
+                            displayClassesAndColors(window.classesAndColors);
+                        }
+
+                        // Логика цветов (удалить старый, если больше не используется)
+                        const labelOccurences = allFrames.map(f => f.annotations).flat().filter(a => a.label === oldLabel).length;
+                        if (labelOccurences === 0) { // Тут было 1, но мы уже изменили метку в памяти, так что теперь их 0
+                            delete window.classesAndColors[oldLabel];
+                            displayClassesAndColors(window.classesAndColors);
+                        }
+
+                        drawBoundingBoxes(frameData.annotations);
+                        updateBoundingBoxList(frameData.annotations);
+                    }
+                }
+                hideContextMenu();
+            });
+        });
+    }
+
+    // 2. ДУБЛИРОВАТЬ (Context Menu)
+    const ctxDuplicateBtn = document.getElementById("ctx-bb-duplicate");
+    if (ctxDuplicateBtn) {
+        ctxDuplicateBtn.addEventListener("click", function () {
+            if (contextMenuTargetIndex === null) return;
+
+            const frameIndex = parseInt(document.getElementById("frame-number").textContent);
+            const frameData = allFrames.find(f => f.frame_index === frameIndex);
+
+            // Глубокое копирование объекта
+            const original = frameData.annotations[contextMenuTargetIndex];
+            const duplicate = JSON.parse(JSON.stringify(original));
+
+            // Смещаем дубликат, чтобы его было видно
+            duplicate.x += 0.02;
+            duplicate.y += 0.02;
+
+            frameData.annotations.push(duplicate);
+            drawBoundingBoxes(frameData.annotations);
+            updateBoundingBoxList(frameData.annotations);
+            hideContextMenu();
+        });
+    }
+
+    // 3. КОПИРОВАТЬ (Context Menu)
+    const ctxCopyBtn = document.getElementById("ctx-bb-copy");
+    if (ctxCopyBtn) {
+        ctxCopyBtn.addEventListener("click", function () {
+            if (contextMenuTargetIndex === null) return;
+
+            const frameIndex = parseInt(document.getElementById("frame-number").textContent);
+            const frameData = allFrames.find(f => f.frame_index === frameIndex);
+
+            // Копируем в глобальный буфер
+            bufferAnnotationsData = frameData.annotations[contextMenuTargetIndex];
+
+            // Активируем кнопку вставки в UI
+            pasteBoundingBoxButton.classList.remove("paste-bounding-box-btn-inactive");
+            pasteBoundingBoxButton.classList.add("paste-bounding-box-btn-active");
+
+            hideContextMenu();
+        });
+    }
+
+    // 4. УДАЛИТЬ (Context Menu)
+    const ctxDeleteBtn = document.getElementById("ctx-bb-delete");
+    if (ctxDeleteBtn) {
+        ctxDeleteBtn.addEventListener("click", function () {
+            if (contextMenuTargetIndex === null) return;
+
+            const index = contextMenuTargetIndex; // Сохраняем индекс, так как hideContextMenu обнулит его
+
+            showConfirmBox("Ви дійсно хочете видалити цей об'єкт?", function (confirmed) {
+                if (!confirmed) return;
+
+                const frameIndex = parseInt(document.getElementById("frame-number").textContent);
+                const frameData = allFrames.find(f => f.frame_index === frameIndex);
+
+                const label = frameData.annotations[index].label;
+
+                // Удаляем бокс из массива
+                frameData.annotations.splice(index, 1);
+
+                // Проверяем, нужно ли удалять цвет из легенды
+                const labelOccurences = allFrames.map(f => f.annotations).flat().filter(a => a.label === label).length;
+                if (labelOccurences === 0) {
+                    delete window.classesAndColors[label];
+                    displayClassesAndColors(window.classesAndColors);
+                }
+
+                drawBoundingBoxes(frameData.annotations);
+                updateBoundingBoxList(frameData.annotations);
+            });
+            hideContextMenu();
+        });
+    }
 });

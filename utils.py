@@ -187,54 +187,54 @@ def calculate_iou(box1, box2):
     return intersection_area / union_area if union_area > 0 else 0
 
 def parse_annotation(line):
-    """Разбирает строку аннотации в формате YOLO (class_label x_center y_center width height [confidence]).
-    Добавлена надежная обработка ошибок для некорректных строк.
+    """Разбирает строку аннотации в формате YOLO.
+    Исправлена ошибка потери класса при стандартном формате из 5 чисел.
     """
     parts = line.strip().split()
     if not parts:
-        return None # Пустая строка
+        return None
 
-    # Ожидаем минимум 5 числовых значений для bbox (x_c, y_c, w, h)
-    # и опционально 6-е для confidence.
-    # Метка класса может состоять из нескольких слов.
+    # Минимально допустимая длина - 5 (класс + 4 координаты)
     if len(parts) < 5:
-        print(f"Предупреждение: Недостаточно данных для разбора в строке: '{line}'. Пропускаю.")
+        print(f"Предупреждение: Недостаточно данных в строке: '{line}'. Пропускаю.")
         return None
 
     try:
-        # Пытаемся разобрать последние 5 или 4 числовых значений.
-        # Если есть 6 частей, последние 5 - это bbox + confidence.
-        # Если 5 частей, последние 4 - это bbox, а confidence не указан.
-        
-        # Если строка заканчивается на 5 float'ов (x_c, y_c, w, h, confidence)
-        if len(parts) >= 5 and all(is_float(p) for p in parts[-5:]):
+        class_label = None
+        x_center, y_center, width, height = 0.0, 0.0, 0.0, 0.0
+        confidence = 1.0 # Дефолтное значение для GT
+
+        # Сценарий 1: Есть Confidence (обычно 6+ элементов или 5, если класс не число, но это редкость для YOLO)
+        # Проверяем, являются ли последние 5 элементов числами (x, y, w, h, conf)
+        # ВАЖНО: Мы должны убедиться, что перед ними есть хотя бы 1 элемент для класса!
+        if len(parts) >= 6 and all(is_float(p) for p in parts[-5:]):
             numeric_values = list(map(float, parts[-5:]))
-            class_label = ' '.join(parts[:-5])
+            class_label = ' '.join(parts[:-5]) # Всё, что перед числами - класс
             x_center, y_center, width, height, confidence = numeric_values
-        # Если строка заканчивается на 4 float'а (x_c, y_c, w, h)
-        elif len(parts) >= 4 and all(is_float(p) for p in parts[-4:]):
+
+        # Сценарий 2: Нет Confidence (Стандартный GT: Класс + 4 координаты)
+        # Проверяем последние 4 элемента
+        elif len(parts) >= 5 and all(is_float(p) for p in parts[-4:]):
             numeric_values = list(map(float, parts[-4:]))
-            class_label = ' '.join(parts[:-4])
+            class_label = ' '.join(parts[:-4]) # Всё, что перед координатами - класс
             x_center, y_center, width, height = numeric_values
-            confidence = 1.0 # Если confidence отсутствует, можно принять 1.0 или 0.0
+            confidence = 1.0
+        
         else:
-            print(f"Предупреждение: Не удалось разобрать числовые значения в строке: '{line}'. Пропускаю.")
+            print(f"Предупреждение: Не удалось разобрать формат строки: '{line}'.")
             return None
 
-        # Проверка, что метка класса не пуста
+        # Финальная проверка метки
         if not class_label:
-            print(f"Предупреждение: Метка класса не найдена в строке: '{line}'. Пропускаю.")
+            # Это может случиться, если строка была типа "0.5 0.5 0.2 0.2 0.9" без класса вообще
+            print(f"Предупреждение: Отсутствует метка класса в строке: '{line}'.")
             return None
-            
-    except ValueError as e:
-        print(f"Ошибка ValueError при разборе строки '{line}': {e}. Пропускаю.")
-        return None
-    
-    except IndexError as e:
-        print(f"Ошибка IndexError при разборе строки '{line}': {e}. Пропускаю.")
-        return None
 
-    return class_label, x_center, y_center, width, height, confidence
+        return class_label, x_center, y_center, width, height, confidence
+
+    except ValueError as e:
+        print(f"Ошибка данных при разборе '{line}': {e}")
+        return None
 
 def is_float(value):
     """Вспомогательная функция для проверки, является ли строка числом с плавающей точкой."""

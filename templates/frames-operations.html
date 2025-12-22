@@ -74,7 +74,6 @@
                 <h3>Об'єкти:</h3>
                 <div id="bounding-boxes-list-control-buttons">
                     <button id="add-bounding-box-btn" class="add-bounding-box-btn">Додати</button>
-                    <button id="paste-bounding-box-btn" class="paste-bounding-box-btn-inactive">Вставити</button>
                 </div>
             </div>
             <div id="bounding-boxes-values"></div>
@@ -266,6 +265,22 @@
         </div>
     </div>
 
+    <!--========================================-->
+    <!-- КОНТЕКСТНІ МЕНЮШКИ (З'ЯВЛЯЮТЬСЯ ПО ПКМ)-->
+    <!--========================================-->
+
+    <div id="context-menu-bb" class="context-menu">
+        <div class="context-menu-item" id="ctx-bb-change-class">✏️ Змінити клас</div>
+        <div class="context-menu-item" id="ctx-bb-duplicate">📑 Дублювати</div>
+        <div class="context-menu-item" id="ctx-bb-copy">📋 Копіювати</div>
+        <div class="context-menu-separator"></div>
+        <div class="context-menu-item delete" id="ctx-bb-delete">🗑️ Видалити</div>
+    </div>
+
+    <!--========================================-->
+    <!-- ПІДКЛЮЧЕННЯ СКРИПТІВ-->
+    <!--========================================-->
+
     <script src="https://unpkg.com/@dotlottie/player-component@2.7.12/dist/dotlottie-player.mjs" type="module"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.socket.io/4.0.1/socket.io.min.js"></script>
@@ -280,6 +295,7 @@
     <script src="../static/js/analysis.js"></script>
     <script src="../static/js/connections-lost-overlay.js"></script>
     <script src="../static/js/project-page.js"></script>
+    <script src="../static/js/frames-zooming.js"></script>
 </body>
 
 </html>
