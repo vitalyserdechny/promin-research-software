@@ -1,362 +1,358 @@
 /**
- * Модуль Analysis для реализации функционала анализа моделей компьютерного зрения 📊📈
- * 
- * Функции:
- * 👀 Отображение панели анализа с выбором моделей и шагов предобработки
- * ▶️ Запуск анализа выбранных моделей с отображением прогресса
- * ℹ️ Обработка результатов анализа и отображение информационных сообщений
- * 
- * Автор: Сердечный Виталий ♥️
+ * Analysis Module 📊
+ * Handles model selection, preprocessing pipeline visualization,
+ * and executes the analysis via Socket.IO/Fetch.
+ * * Refactored for PROMIN "Cute Science" UI.
  */
 
 document.addEventListener("DOMContentLoaded", function () {
-
-    const socket = io.connect(this.location.origin)
-
+    
+    // --- DOM ELEMENTS ---
+    const analysisPanel = document.getElementById('analysis-panel');
+    const runAnalysisBtn = document.getElementById('run-analysis-btn');
+    const analysisDoneBtn = document.getElementById('analysis-done-btn');
+    
+    // Audio
     const analysisAudio = document.getElementById('bg-analysis-music');
     const doneAudio = document.getElementById('done-sound');
 
-    const modelSelectionDiv = document.getElementById('model-selection');
-    const preprocSelectionDiv = document.getElementById('preproc-selection');
-
-    const analysisPanel = document.getElementById('analysis-panel');
-    const analysisPanelContent = document.getElementById('analysis-panel-content');
-
-    const openAnalysisPanelBtn = document.getElementById('models-analysis-btn');
-    const closeAnalysisPanelBtn = document.getElementById('close-analysis-panel-btn');
-
-    const runAnalysisBtn = document.getElementById('run-analysis-btn');
-    const analysisMsgText = document.getElementById('analysis-message-text');
-    const analysisDoneBtn = document.getElementById('analysis-done-btn');
-
-    const fileInput = document.getElementById('preproc-file-input');
-    const textarea = document.getElementById('preproc-textarea');
-
+    // UI Sections
+    const setupElements = document.querySelectorAll('.outside-div-elems'); // Elements to hide during process
     const analysisProcessDiv = document.getElementById('analysis-process');
     const analysisDoneDiv = document.getElementById('analysis-done-div');
+    const analysisMsgText = document.getElementById('analysis-message-text');
 
-    const outsideElems = analysisPanelContent.querySelectorAll('.outside-div-elems');
-
-    const selectAllModelsCheckbox = document.getElementById('select_all_models');
-
+    // Inputs
+    const fileInput = document.getElementById('preproc-file-input');
+    const selectAllCheckbox = document.getElementById('select_all_models');
     const showSchemeBtn = document.getElementById('show-preproc-scheme-btn');
 
+    // State
     let preprocJsonObject = null;
     let preprocStepColors = [];
+    const socket = io.connect(this.location.origin);
+
+
+    // ============================================================
+    // 1. STATE MANAGEMENT (Toggle Views)
+    // ============================================================
+
+    /**
+     * Switches between Setup, Processing, and Finished states.
+     * Exposed globally so project-page.js can reset view on open.
+     * @param {string} mode - 'setup' | 'process' | 'finished'
+     */
+    window.toggleView = function(mode) {
+        if (mode === "analysis_setup") {
+            // Show configuration controls
+            setupElements.forEach(el => {
+                // 🔥 ФИКС ЗВЕЗДЫ: Если элемент - это сетка, возвращаем GRID, а не BLOCK
+                if (el.querySelector('.grid-selection') || el.classList.contains('grid-selection')) {
+                    el.style.display = 'grid'; 
+                } else {
+                    el.style.display = 'block';
+                }
+                
+                // Если внутри есть вложенная сетка, чиним и её
+                const innerGrid = el.querySelector('.grid-selection');
+                if (innerGrid) innerGrid.style.display = 'grid';
+            });
+            if(runAnalysisBtn) runAnalysisBtn.style.display = 'block';
+            
+            // Hide progress & result
+            if(analysisProcessDiv) analysisProcessDiv.style.display = 'none';
+            if(analysisDoneDiv) analysisDoneDiv.style.display = 'none';
+            
+            // Reset Audio
+            if(analysisAudio) { analysisAudio.pause(); analysisAudio.currentTime = 0; }
+        } 
+        else if (mode === "analysis_process") {
+            // Hide controls
+            setupElements.forEach(el => el.style.display = 'none');
+            if(runAnalysisBtn) runAnalysisBtn.style.display = 'none';
+            
+            // Show loader
+            if(analysisProcessDiv) analysisProcessDiv.style.display = 'flex';
+        } 
+        else if (mode === "analysis_finished") {
+            // Hide loader
+            if(analysisProcessDiv) analysisProcessDiv.style.display = 'none';
+            
+            // Show Success
+            if(analysisDoneDiv) analysisDoneDiv.style.display = 'flex';
+        }
+    };
+
+
+    // ============================================================
+    // 2. SOCKET.IO HANDLERS
+    // ============================================================
 
     socket.on('analysis-progress-update', function (data) {
         const msg = data.message;
         const step = data.step;
 
-        if (step == 1) {
-            const frame = data.frame;
-            const total_frames = data.total_frames;
-            analysisMsgText.textContent = msg + '...' + '(' + frame + '/' + total_frames + ')';
-        }
-        else {
+        // Step 1 usually involves frame extraction which has a counter
+        if (step == 1 && data.total_frames) {
+            analysisMsgText.textContent = `${msg}... (${data.frame}/${data.total_frames})`;
+        } else {
             analysisMsgText.textContent = msg;
         }
     });
 
-    // mode может быть "analysis_setup", "analysis_process" или "analysis_finished"
-    function toggleView(mode) {
-        if (mode == "analysis_setup") {
-            // Отображаем все элементы для настройки анализа
-            modelSelectionDiv.style.display = 'flex';
-            preprocSelectionDiv.style.display = 'flex';
-            runAnalysisBtn.style.display = 'block';
 
-            outsideElems.forEach(el => {
-                el.style.display = 'block';
-            })
+    // ============================================================
+    // 3. EVENT LISTENERS
+    // ============================================================
 
-            // Скрываем элементы, которые не нужны на этапе настройки
-            analysisProcessDiv.style.display = 'none';
-            analysisDoneDiv.style.display = 'none';
-        }
-        else if (mode == "analysis_process") {
-            modelSelectionDiv.style.display = 'none';
-            preprocSelectionDiv.style.display = 'none';
-            runAnalysisBtn.style.display = 'none';
-
-            analysisProcessDiv.style.display = 'flex';
-
-            outsideElems.forEach(el => {
-                el.style.display = 'none';
-            })
-        }
-        else if (mode == "analysis_finished") {
-            modelSelectionDiv.style.display = 'none';
-            preprocSelectionDiv.style.display = 'none';
-            runAnalysisBtn.style.display = 'none';
-
-            analysisDoneDiv.style.display = 'flex';
-
-            outsideElems.forEach(el => {
-                el.style.display = 'none';
-            })
-
-            analysisProcessDiv.style.display = 'none';
-        }
-        else {
-            console.error("Unknown view mode:", mode);
-            showMessageBox('Oops... something went wrong internally...', 'error');
-        }
-    }
-
-    selectAllModelsCheckbox.addEventListener('click', function () {
-        const modelCheckboxes = document.querySelectorAll('#model-selection input[name="model"]');
-        modelCheckboxes.forEach(checkbox => {
-            checkbox.checked = selectAllModelsCheckbox.checked;
+    // --- Select All Models ---
+    if(selectAllCheckbox) {
+        selectAllCheckbox.addEventListener('click', function () {
+            const modelCheckboxes = document.querySelectorAll('#model-selection input[name="model"]');
+            modelCheckboxes.forEach(cb => cb.checked = selectAllCheckbox.checked);
         });
-    })
-
-    function getRandomDarkColor() {
-        // H: оттенок от 0 до 360, S: насыщенность 60–100%, L: светлота 20–40%
-        const h = Math.floor(Math.random() * 360);
-        const s = 70 + Math.floor(Math.random() * 30);  // насыщенность 70–100%
-        const l = 25 + Math.floor(Math.random() * 15);  // светлота 25–40%
-        return `hsl(${h}, ${s}%, ${l}%)`;
     }
 
-    function drawPreprocStepsOnCanvas(preprocSteps, canvas) {
-        const ctx = canvas.getContext('2d');
+    // --- File Upload (Preprocessing Pipeline) ---
+    if(fileInput) {
+        fileInput.addEventListener('change', function () {
+            const file = fileInput.files[0];
+            if (!file) return;
 
-        const blockWidth = 220;
-        const gap = 50;
-
-        // Устанавливаем динамическую ширину canvas на основе количества блоков
-        canvas.width = preprocSteps.length * (blockWidth + gap) + 40;
-        canvas.height = 180;
-
-        const width = canvas.width;
-        const height = canvas.height;
-
-        ctx.clearRect(0, 0, width, height);
-
-        const blockHeight = 100;
-        const padding = 12;
-        const borderRadius = 15;
-
-        ctx.textBaseline = 'top';
-        // Функция для рисования скругленного прямоугольника
-        function roundRect(ctx, x, y, w, h, r) {
-            ctx.beginPath();
-            ctx.moveTo(x + r, y);
-            ctx.lineTo(x + w - r, y);
-            ctx.quadraticCurveTo(x + w, y, x + w, y + r);
-            ctx.lineTo(x + w, y + h - r);
-            ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
-            ctx.lineTo(x + r, y + h);
-            ctx.quadraticCurveTo(x, y + h, x, y + h - r);
-            ctx.lineTo(x, y + r);
-            ctx.quadraticCurveTo(x, y, x + r, y);
-            ctx.closePath();
-        }
-
-        // Функция для переноса текста по строкам
-        function wrapText(ctx, text, x, y, maxWidth, lineHeight) {
-            const words = text.split(' ');
-            let line = '';
-            let testLine = '';
-            let lineArray = [];
-            for (let n = 0; n < words.length; n++) {
-                testLine += words[n] + ' ';
-                const metrics = ctx.measureText(testLine);
-                const testWidth = metrics.width;
-                if (testWidth > maxWidth && n > 0) {
-                    lineArray.push(line.trim());
-                    line = words[n] + ' ';
-                    testLine = words[n] + ' ';
-                } else {
-                    line += words[n] + ' ';
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                try {
+                    preprocJsonObject = JSON.parse(e.target.result);
+                    // Generate random colors for visualization
+                    preprocStepColors = preprocJsonObject.map(() => getRandomPipelineColor());
+                    
+                    console.log("Pipeline loaded:", preprocJsonObject);
+                    
+                    // Show confirmation
+                    if(typeof showMessageBox === 'function') {
+                        showMessageBox("Pipeline configuration loaded successfully! 🛠️", "success");
+                    }
+                } catch (err) {
+                    console.error("JSON Parse Error:", err);
+                    if(typeof showMessageBox === 'function') {
+                        showMessageBox("Invalid JSON file!", "error");
+                    }
                 }
-                if (n === words.length - 1) {
-                    lineArray.push(line.trim());
-                }
+            };
+            reader.readAsText(file);
+        });
+    }
+
+    // --- Show Pipeline Scheme Button ---
+    if(showSchemeBtn) {
+        showSchemeBtn.addEventListener('click', () => {
+            if (!preprocJsonObject) {
+                showMessageBox("Please load a JSON pipeline file first!", "warning");
+                return;
             }
+            
+            const modal = document.getElementById('preproc-scheme-modal');
+            const canvas = document.getElementById('preproc-canvas');
+            const closeBtn = document.getElementById('preproc-scheme-modal-ok-btn');
 
-            for (let i = 0; i < lineArray.length; i++) {
-                ctx.fillText(lineArray[i], x, y + (i * lineHeight));
-            }
-        }
-
-        function paramToString(value) {
-            if (typeof value === 'object' && value !== null) {
-                if (Array.isArray(value)) {
-                    return `[${value.map(paramToString).join(', ')}]`;
-                } else {
-                    return '{' + Object.entries(value).map(([k, v]) => `${k}:${paramToString(v)}`).join(', ') + '}';
-                }
-            }
-            return String(value);
-        }
-
-        // Вычисляем горизонтальное смещение для центрирования всех блоков
-        const totalWidth = preprocSteps.length * (blockWidth + gap) - gap;
-        let startX = Math.max((width - totalWidth) / 2, 20);
-        const y = (height - blockHeight) / 2;
-
-        preprocSteps.forEach((step, index) => {
-            const x = startX + index * (blockWidth + gap);
-
-            // Рисуем фон с закруглениями
-            roundRect(ctx, x, y, blockWidth, blockHeight, borderRadius);
-            const bgColor = preprocStepColors[index] || '#444';
-            ctx.fillStyle = bgColor;
-            ctx.fill();
-
-            // Обводка
-            ctx.strokeStyle = '#2C3E50';
-            ctx.lineWidth = 2;
-            roundRect(ctx, x, y, blockWidth, blockHeight, borderRadius);
-            ctx.stroke();
-
-            // Текст: название метода жирным шрифтом
-            ctx.fillStyle = '#FFF';
-            ctx.font = 'bold 18px Arial';
-            ctx.fillText(step.method || "Unknown", x + padding, y + padding);
-
-            // Текст параметров
-            ctx.font = '14px Arial';
-            const params = Object.entries(step)
-                .filter(([key]) => key !== 'method')
-                .map(([key, value]) => `${key}=${paramToString(value)}`)
-                .join(', ');
-
-            // Перенос текста с паддингами, сдвиг по Y чтобы не пересекаться с заголовком
-            wrapText(ctx, params, x + padding, y + padding + 28, blockWidth - padding * 2, 18);
-
-            // Рисуем стрелку к следующему блоку, если он есть
-            if (index < preprocSteps.length - 1) {
-                const arrowStartX = x + blockWidth;
-                const arrowStartY = y + blockHeight / 2;
-                const arrowEndX = arrowStartX + gap - 15;
-                const arrowEndY = arrowStartY;
-
-                ctx.strokeStyle = '#2C3E50';
-                ctx.lineWidth = 3;
-
-                // Линия стрелки
-                ctx.beginPath();
-                ctx.moveTo(arrowStartX, arrowStartY);
-                ctx.lineTo(arrowEndX, arrowEndY);
-                ctx.stroke();
-
-                // Голова стрелки
-                ctx.beginPath();
-                ctx.moveTo(arrowEndX, arrowEndY);
-                ctx.lineTo(arrowEndX - 10, arrowEndY - 7);
-                ctx.lineTo(arrowEndX - 10, arrowEndY + 7);
-                ctx.closePath();
-                ctx.fillStyle = '#2C3E50';
-                ctx.fill();
+            if(modal && canvas) {
+                drawPipelineOnCanvas(preprocJsonObject, canvas, preprocStepColors);
+                
+                // Show custom modal manually (simple block/none logic for this specific helper)
+                modal.style.display = 'block'; 
+                
+                // One-time listener to close
+                closeBtn.onclick = () => { modal.style.display = 'none'; };
             }
         });
     }
 
-    fileInput.addEventListener('change', function () {
-        const file = fileInput.files[0];
-        if (!file) return;
+    // --- RUN ANALYSIS (Main Logic) ---
+    if(runAnalysisBtn) {
+        runAnalysisBtn.addEventListener('click', async function () {
+            // 1. Validation
+            const selectedModels = Array.from(document.querySelectorAll('#model-selection input[name="model"]:checked'))
+                .filter(cb => cb.value !== 'select_all')
+                .map(cb => cb.value);
 
-        const reader = new FileReader();
-        reader.onload = function (e) {
+            if (selectedModels.length === 0) {
+                showMessageBox('Please select at least one model!', 'error');
+                return;
+            }
+
+            // 2. UI Updates
+            window.toggleView("analysis_process");
+            if(analysisAudio) {
+                analysisAudio.currentTime = 0;
+                analysisAudio.play().catch(e => console.log("Audio autoplay blocked:", e));
+            }
+
+            // 3. Prepare Payload
+            const payload = {
+                models: selectedModels,
+                preprocessing_pipeline: preprocJsonObject ? preprocJsonObject : []
+            };
+
+            // 4. Send Request
             try {
-                const preprocSchemeModal = document.getElementById('preproc-scheme-modal');
-                if (!preprocSchemeModal) throw new Error("Preprocessing scheme modal not found");
-
-                const preprocSchemeOkBtn = document.getElementById('preproc-scheme-modal-ok-btn');
-                if (!preprocSchemeOkBtn) throw new Error("Preprocessing scheme OK button not found");
-
-                preprocSchemeOkBtn.addEventListener('click', function () {
-                    preprocSchemeModal.style.display = 'none';
+                const response = await fetch("/run-analysis", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(payload)
                 });
 
-                preprocJsonObject = JSON.parse(e.target.result);
-                preprocStepColors = preprocJsonObject.map(() => getRandomDarkColor());
-                console.log("JSON loaded:", preprocJsonObject);
-
-                // textarea.value = JSON.stringify(preprocJsonObject, null, 2);
-                preprocSchemeModal.style.display = 'block';
-                drawPreprocStepsOnCanvas(preprocJsonObject, document.getElementById('preproc-canvas'));
-            } catch (err) {
-                console.error("Error parsing JSON:", err);
-                showMessageBox("Unable to read JSON-file!", "error");
-            }
-        };
-        reader.readAsText(file);
-    });
-
-    openAnalysisPanelBtn.addEventListener('click', function () {
-        toggleView("analysis_setup");
-        analysisPanel.classList.add('active');
-    });
-
-    closeAnalysisPanelBtn.addEventListener('click', function () {
-        analysisPanel.classList.remove('active');
-    });
-
-    analysisDoneBtn.addEventListener('click', function () {
-        analysisPanel.classList.remove('active');
-    })
-
-    showSchemeBtn.addEventListener('click', () => {
-        const preprocSchemeModal = document.getElementById('preproc-scheme-modal');
-        if (!preprocSchemeModal) return;
-
-        if (!preprocJsonObject) {
-            showMessageBox("Please load a JSON pipeline file first!", "warning");
-            return;
-        }
-
-        preprocSchemeModal.style.display = 'block';
-
-        drawPreprocStepsOnCanvas(preprocJsonObject, document.getElementById('preproc-canvas'));
-    });
-
-    runAnalysisBtn.addEventListener('click', function () {
-        const selectedModels = Array.from(document.querySelectorAll('#model-selection input[name="model"]:checked')).filter(checkbox => checkbox.value != 'select_all')
-            .map(checkbox => checkbox.value);
-
-        if (selectedModels.length === 0) {
-            showMessageBox('Please select at least one model for analysis!', 'error');
-            return;
-        }
-
-        toggleView("analysis_process");
-
-        analysisAudio.currentTime = 0
-        analysisAudio.play()
-
-        const dataToSend = {
-            models: selectedModels,
-            preprocessing_pipeline: preprocJsonObject ? preprocJsonObject : []
-        };
-
-        console.log("preprocJsonObject:", preprocJsonObject);
-        console.log("typeof preprocJsonObject:", typeof preprocJsonObject);
-        console.log("stringify dataToSend:", JSON.stringify(dataToSend));
-
-        fetch("/run-analysis", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify(dataToSend)
-        })
-            .then(response => {
                 if (response.ok) {
-                    toggleView("analysis_finished");
-                    analysisAudio.pause()
-                    doneAudio.currentTime = 0
-                    doneAudio.play()
+                    // Success
+                    window.toggleView("analysis_finished");
+                    if(analysisAudio) analysisAudio.pause();
+                    if(doneAudio) {
+                        doneAudio.currentTime = 0;
+                        doneAudio.play().catch(e => console.log("Audio autoplay blocked:", e));
+                    }
                 } else {
-                    showMessageBox('Error running analysis 🥲', 'error');
+                    throw new Error("Server returned " + response.status);
                 }
-            })
-            .catch(error => {
-                showMessageBox('Error running analysis 🥲', 'error');
-                console.error("Error running analysis:", error)
-            });
-    });
+            } catch (error) {
+                console.error("Analysis failed:", error);
+                showMessageBox('Error running analysis. See console.', 'error');
+                window.toggleView("analysis_setup"); // Revert to setup
+                if(analysisAudio) analysisAudio.pause();
+            }
+        });
+    }
+
+    // --- Done Button ---
+    if(analysisDoneBtn) {
+        analysisDoneBtn.addEventListener('click', function () {
+            // Close modal via global helper from project-page.js
+            if(window.closeModal) {
+                window.closeModal('analysis-panel');
+            } else {
+                // Fallback
+                analysisPanel.style.display = 'none';
+            }
+        });
+    }
 });
+
+
+// ============================================================
+// 4. CANVAS DRAWING HELPERS (Visualization)
+// ============================================================
+
+function getRandomPipelineColor() {
+    // Generates a darkish, professional HSL color
+    const h = Math.floor(Math.random() * 360);
+    const s = 60 + Math.floor(Math.random() * 20);
+    const l = 30 + Math.floor(Math.random() * 15);
+    return `hsl(${h}, ${s}%, ${l}%)`;
+}
+
+function drawPipelineOnCanvas(steps, canvas, colors) {
+    const ctx = canvas.getContext('2d');
+    
+    // Config
+    const blockWidth = 220;
+    const blockHeight = 100;
+    const gap = 50;
+    const padding = 12;
+    const borderRadius = 15;
+
+    // Resize canvas
+    canvas.width = steps.length * (blockWidth + gap) + 40;
+    canvas.height = 180;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // Helpers
+    const roundRect = (x, y, w, h, r) => {
+        ctx.beginPath();
+        ctx.moveTo(x + r, y);
+        ctx.lineTo(x + w - r, y);
+        ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+        ctx.lineTo(x + w, y + h - r);
+        ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+        ctx.lineTo(x + r, y + h);
+        ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+        ctx.lineTo(x, y + r);
+        ctx.quadraticCurveTo(x, y, x + r, y);
+        ctx.closePath();
+    };
+
+    const wrapText = (text, x, y, maxWidth, lineHeight) => {
+        const words = text.split(' ');
+        let line = '';
+        
+        for (let n = 0; n < words.length; n++) {
+            const testLine = line + words[n] + ' ';
+            const metrics = ctx.measureText(testLine);
+            if (metrics.width > maxWidth && n > 0) {
+                ctx.fillText(line, x, y);
+                line = words[n] + ' ';
+                y += lineHeight;
+            } else {
+                line = testLine;
+            }
+        }
+        ctx.fillText(line, x, y);
+    };
+
+    const paramToString = (val) => {
+        if (typeof val === 'object' && val !== null) return JSON.stringify(val);
+        return String(val);
+    };
+
+    // Drawing Loop
+    const startX = 20; // Fixed padding left
+    const startY = (canvas.height - blockHeight) / 2;
+
+    steps.forEach((step, index) => {
+        const x = startX + index * (blockWidth + gap);
+
+        // 1. Background
+        roundRect(x, startY, blockWidth, blockHeight, borderRadius);
+        ctx.fillStyle = colors[index] || '#444';
+        ctx.fill();
+
+        // 2. Border
+        ctx.strokeStyle = '#2C3E50';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+
+        // 3. Title (Method Name)
+        ctx.fillStyle = '#FFF';
+        ctx.font = 'bold 16px "Quicksand", sans-serif';
+        ctx.textBaseline = 'top';
+        ctx.fillText(step.method || "Unknown", x + padding, startY + padding);
+
+        // 4. Params
+        ctx.font = '12px "Fira Code", monospace';
+        const paramsStr = Object.entries(step)
+            .filter(([k]) => k !== 'method')
+            .map(([k, v]) => `${k}:${paramToString(v)}`)
+            .join(', ');
+        
+        wrapText(paramsStr, x + padding, startY + padding + 25, blockWidth - padding*2, 14);
+
+        // 5. Arrow (if not last)
+        if (index < steps.length - 1) {
+            const arrowX = x + blockWidth;
+            const arrowY = startY + blockHeight / 2;
+            const arrowEnd = arrowX + gap - 10;
+
+            ctx.beginPath();
+            ctx.moveTo(arrowX, arrowY);
+            ctx.lineTo(arrowEnd, arrowY);
+            ctx.strokeStyle = '#2C3E50';
+            ctx.lineWidth = 3;
+            ctx.stroke();
+
+            // Arrowhead
+            ctx.beginPath();
+            ctx.moveTo(arrowEnd, arrowY);
+            ctx.lineTo(arrowEnd - 8, arrowY - 6);
+            ctx.lineTo(arrowEnd - 8, arrowY + 6);
+            ctx.fillStyle = '#2C3E50';
+            ctx.fill();
+        }
+    });
+}

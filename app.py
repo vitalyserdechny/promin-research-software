@@ -96,7 +96,7 @@ def index():
     app.config['PROJECTS_INFO'] = projects
     return render_template('index.html')
 
-@app.route("/ping")
+@app.route("/ping", methods=['GET'])
 def ping():
     return "", 200
 

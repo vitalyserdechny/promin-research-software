@@ -1,42 +1,86 @@
-/**
-  * 🛑 Стили для оверлея "Потеряно соединение"
-  * Этот файл оформляет затемнение, которое появляется при потере соединения с сервером.
-  * Включает стили для фона, окна, иконки 📡 и текста.
-  *
-**/
+/* --- IMPORTS --- */
+@import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@500;700&display=swap');
 
+/* --- OVERLAY CONTAINER --- */
 .connection-lost-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  background: rgba(10, 10, 10, 0.6);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 99999; 
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    
+    background: rgba(255, 255, 255, 0.6);
+    backdrop-filter: blur(10px); 
+    -webkit-backdrop-filter: blur(10px);
+    
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 99999; 
+    
+    opacity: 0;
+    transition: opacity 0.5s ease;
+    pointer-events: none; 
 }
 
+.connection-lost-overlay.active {
+    opacity: 1;
+    pointer-events: all;
+}
+
+/* --- THE BOX --- */
 .connection-lost-box {
-  background: rgba(0, 0, 0, 0.7);
-  padding: 32px 48px;
-  border-radius: 16px;
-  text-align: center;
-  color: white;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+    background: rgba(255, 255, 255, 0.95);
+    padding: 40px 60px;
+    border-radius: 25px;
+    text-align: center;
+    
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+    
+    transform: translateY(20px);
+    transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
+.connection-lost-overlay.active .connection-lost-box {
+    transform: translateY(0);
+}
+
+/* --- ICON (EMOJI) --- */
 .connection-lost-icon {
-  width: 64px;
-  height: 64px;
-  margin-bottom: 16px;
-  opacity: 0.8;
+    font-size: 64px;
+    line-height: 1;
+    margin: 0;
+    
+    animation: searching 2s infinite ease-in-out;
+    filter: drop-shadow(0 5px 10px rgba(0,0,0,0.1));
 }
 
+/* --- TEXT --- */
 .connection-lost-text {
-  font-size: 20px;
-  font-weight: 500;
+    font-family: 'Quicksand', sans-serif;
+    font-size: 22px;
+    font-weight: 700;
+    color: #555; /* Темно-серый вместо белого */
+    margin: 0;
+}
+
+/* Subtext (Optional description) */
+.connection-lost-subtext {
+    font-family: 'Quicksand', sans-serif;
+    font-size: 14px;
+    color: #888;
+    margin-top: -10px;
+}
+
+/* --- KEYFRAMES --- */
+@keyframes searching {
+    0% { transform: scale(1); opacity: 0.8; }
+    50% { transform: scale(1.1); opacity: 1; }
+    100% { transform: scale(1); opacity: 0.8; }
 }

@@ -4,57 +4,49 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <title>PROMIN - утіліта для досліджень у галузі CV з відкритим кодом</title>
+    <title>PROMIN | Project Workspace</title>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Ponomar&display=swap" rel="stylesheet">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link
-        href="https://fonts.googleapis.com/css2?family=Fira+Sans:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Ponomar&display=swap"
+    <link href="https://fonts.googleapis.com/css2?family=Righteous&family=Quicksand:wght@500;600;700&display=swap"
         rel="stylesheet">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Audiowide&display=swap" rel="stylesheet">
 
     <link rel="stylesheet" href="../static/css/connection-lost-overlay.css">
     <link rel="stylesheet" href="../static/css/messagebox.css">
     <link rel="stylesheet" href="../static/css/loading-panel.css">
-    <link rel="stylesheet" href="../static/css/navbar.css">
     <link rel="stylesheet" href="../static/css/project-page.css">
+    <link rel="stylesheet" href="../static/css/navbar.css">
 
     <link rel="icon" href="../static/images/favicon_new.ico" type="image/x-icon">
-
 </head>
 
 <body>
     <div id="loading-panel" class="loading-panel">
         <div class="loading-spinner"></div>
-        <p>Завантаження...</p>
+        <p>Loading magic...</p>
     </div>
 
     <header>
+        <div class="logo">PROMIN</div>
         <nav class="navbar">
             <ul class="nav-menu">
                 <li class="nav-item dropdown">
-                    <a href="#">🗂️ Проект ▾</a>
+                    <a href="#">🗂️ Project ▾</a>
                     <ul class="dropdown-menu">
-                        <li><a href="#" id="save-project-btn">💾 Зберегти</a></li>
-                        <li><a href="#" id="close-project-btn">🔴 Закрити</a></li>
+                        <li><a href="#" id="save-project-btn">💾 Save</a></li>
+                        <li><a href="#" id="close-project-btn">🔴 Close</a></li>
                     </ul>
                 </li>
                 <li class="nav-item dropdown">
-                    <a href="#">🚀 Аналіз ▾</a>
+                    <a href="#">🚀 Analysis ▾</a>
                     <ul class="dropdown-menu">
-                        <li><a href="#" id="models-analysis-btn">📈 Новий аналіз</a></li>
-                        <li><a href="#" id="get-reports-btn">📋 Звіти</a></li>
+                        <li><a href="#" id="models-analysis-btn">📈 New Analysis</a></li>
+                        <li><a href="#" id="get-reports-btn">📋 Reports</a></li>
                     </ul>
                 </li>
-                <li class="nav-item"><a href="#" id="enter_playground_btn">🎮 Пісочниця</a></li>
-                <li class="nav-item"><a href="#" id="cuda_status_btn">🧮 CUDA статус</a></li>
-                <li class="nav-item"><a href="#">ℹ️ Допомога</a></li>
+                <li class="nav-item"><a href="#" id="enter_playground_btn">🎮 Playground</a></li>
+                <li class="nav-item"><a href="#" id="cuda_status_btn">🧮 CUDA Status</a></li>
+                <li class="nav-item"><a href="#">ℹ️ Help</a></li>
             </ul>
         </nav>
     </header>
@@ -62,44 +54,50 @@
     <main>
         <div class="frame-viewer" id="frame-viewer">
             <div class="frame-viewer-header">
-                <h2>Кадр #<span id="frame-number">4</span></h2>
+                <h2>Frame #<span id="frame-number">0</span></h2>
+            </div>
+            <div class="zoom-indicator">
+                <span>Zoom: <span id="zoom-level">100%</span></span>
             </div>
             <div class="image-container" id="image-container">
                 <img src="" alt="Frame Image" id="frame-image">
-                <div id="bounding-boxes"></div> <!-- Сюда будем добавлять рамки -->
+                <div id="bounding-boxes"></div>
             </div>
         </div>
+
         <div id="bounding-boxes-list">
             <div id="bounding-boxes-list-control-container">
-                <h3>Об'єкти:</h3>
+                <h3>Objects</h3>
                 <div id="bounding-boxes-list-control-buttons">
-                    <button id="add-bounding-box-btn" class="add-bounding-box-btn">Додати</button>
+                    <button id="add-bounding-box-btn" class="icon-btn" title="Add Box">➕ Add</button>
                 </div>
             </div>
             <div id="bounding-boxes-values"></div>
         </div>
+
         <div class="classes-and-colors" id="classes-and-colors">
-            <h3>Класи:</h3>
+            <h3>Classes</h3>
             <div id="classes-and-colors-list"></div>
         </div>
     </main>
+
     <footer>
         <div class="frames-container">
             <div class="frames-list"></div>
             <div class="pages-control">
-                <button id="prev-page" class="prev-page">⬅</button>
+                <button id="prev-page" class="nav-btn">⬅</button>
                 <span id="pages-counter">1/1</span>
-                <button id="next-page" class="next-page">➡</button>
+                <button id="next-page" class="nav-btn">➡</button>
             </div>
         </div>
     </footer>
 
-    <div id="playground-panel" class="playground-panel">
-        <div id="playground-panel-header" class="playground-panel-header">
-            <h2>Пісочниця 🎮</h2>
-            <button id="close-playground-panel-btn" class="close-playground-panel-btn">❌</button>
+    <div id="playground-panel" class="glass-panel">
+        <div class="panel-header">
+            <h2>Playground 🎮</h2>
+            <button id="close-playground-panel-btn" class="close-btn">×</button>
         </div>
-        <div id="playground-panel-content" class="playground-panel-content">
+        <div class="panel-content" style="height: 100%;">
             <div class="image-container" id="playground-image-container">
                 <div class="playground-image-container-section">
                     <img src="" alt="Frame Image" id="playground-frame-image">
@@ -109,177 +107,188 @@
                     <pre id="playground-log-output" class="playground-log-output"></pre>
                 </div>
             </div>
-            <div class="playground-methods" id="playground-methods">
-                <div class="playground-methods-section">
-                    <input type="text" id="playground-command-input" placeholder="Например: preproc median k=5"
-                        style="width: 100%; padding: 8px; margin-bottom: 8px;">
-                </div>
+            <div class="playground-methods">
+                <input type="text" id="playground-command-input" placeholder="Example: preproc median k=5">
             </div>
         </div>
     </div>
 
-    <div id="select-report-panel" class="select-report-panel">
-        <div id="select-report-panel-header" class="select-report-panel-header">
-            <h2>Обрати звіт 📈</h2>
-            <button id="close-select-report-panel-btn" class="close-select-report-panel-btn">❌</button>
+    <div id="select-report-panel" class="glass-panel small-panel">
+        <div class="panel-header">
+            <h2>Select Report 📈</h2>
+            <button id="close-select-report-panel-btn" class="close-btn">×</button>
         </div>
-        <div id="select-report-panel-content" class="select-report-panel-content">
+        <div class="panel-content">
             <select id="report-selector"></select>
-            <button id="select-report-btn" class="run-analysis-btn">Подивитися звіт 👀</button>
+            <button id="select-report-btn" class="action-btn">View Report 👀</button>
         </div>
     </div>
 
-    <div id="view-report-panel" class="view-report-panel">
-        <div id="view-report-panel-header" class="view-report-panel-header">
-            <h2>Подивитися звіт 📈</h2>
-            <button id="close-view-report-panel-btn" class="close-view-report-panel-btn">❌</button>
+    <div id="view-report-panel" class="glass-panel large-panel">
+        <div class="panel-header">
+            <h2>Report View 📊</h2>
+            <button id="close-view-report-panel-btn" class="close-btn">×</button>
         </div>
-        <div id="view-report-panel-content" class="view-report-panel-content">
+        <div id="view-report-panel-content" class="panel-content scrollable">
         </div>
     </div>
 
-    <div id="analysis-panel" class="analysis-panel">
-        <div id="analysis-panel-header" class="analysis-panel-header">
-            <h2>Аналіз 📈</h2>
-            <button id="close-analysis-panel-btn" class="close-analysis-panel-btn">❌</button>
+    <div id="analysis-panel" class="glass-panel medium-panel">
+        <div class="panel-header">
+            <h2>Run Analysis 🧪</h2>
+            <button id="close-analysis-panel-btn" class="close-btn">×</button>
         </div>
-        <div id="analysis-panel-content" class="analysis-panel-content">
-            <h3 class="outside-div-elems">Моделі 🤖:</h3>
-            <label class="outside-div-elems"><input class="outside-div-elems" type="checkbox" name="select_all_models"
-                    value="select_all" id="select_all_models">Обрати всі</label><br>
-            <div id="model-selection">
-                <div>
-                    <label><input type="checkbox" name="model" value="yolo_11_x"> YOLOv11(x)</label><br>
-                    <label><input type="checkbox" name="model" value="yolo_11_s"> YOLOv11(s)</label><br>
-                    <label><input type="checkbox" name="model" value="yolo_11_n"> YOLOv11(n)</label><br>
-                    <label><input type="checkbox" name="model" value="yolo_11_m"> YOLOv11(m)</label><br>
-                    <label><input type="checkbox" name="model" value="yolo_11_l"> YOLOv11(l)</label><br>
-                </div>
-                <div>
-                    <label><input type="checkbox" name="model" value="yolo_10_n"> YOLOv10(n)</label><br>
-                    <label><input type="checkbox" name="model" value="yolo_10_s"> YOLOv10(s)</label><br>
-                    <label><input type="checkbox" name="model" value="yolo_10_m"> YOLOv10(m)</label><br>
-                    <label><input type="checkbox" name="model" value="yolo_10_b"> YOLOv10(b)</label><br>
-                    <label><input type="checkbox" name="model" value="yolo_10_l"> YOLOv10(l)</label><br>
-                    <label><input type="checkbox" name="model" value="yolo_10_x"> YOLOv10(x)</label><br>
-                </div>
-                <div>
-                    <label><input type="checkbox" name="model" value="yolo_9_t"> YOLOv9(t)</label><br>
-                    <label><input type="checkbox" name="model" value="yolo_9_s"> YOLOv9(s)</label><br>
-                    <label><input type="checkbox" name="model" value="yolo_9_m"> YOLOv9(m)</label><br>
-                    <label><input type="checkbox" name="model" value="yolo_9_c"> YOLOv9(c)</label><br>
-                    <label><input type="checkbox" name="model" value="yolo_9_e"> YOLOv9(e)</label><br>
 
-                </div>
-                <div>
-                    <label><input type="checkbox" name="model" value="yolo_8_n"> YOLOv8(n)</label><br>
-                    <label><input type="checkbox" name="model" value="yolo_8_s"> YOLOv8(s)</label><br>
-                    <label><input type="checkbox" name="model" value="yolo_8_m"> YOLOv8(m)</label><br>
-                    <label><input type="checkbox" name="model" value="yolo_8_l"> YOLOv8(l)</label><br>
-                    <label><input type="checkbox" name="model" value="yolo_8_x"> YOLOv8(x)</label><br>
-                </div>
-                <div>
-                    <label><input type="checkbox" name="model" value="faster_rcnn"> Faster R-CNN</label><br>
-                    <label><input type="checkbox" name="model" value="mask_rcnn"> Mask R-CNN</label><br>
-                    <label><input type="checkbox" name="model" value="ssd"> SSD</label><br>
-                    <label><input type="checkbox" name="model" value="detr"> DETR</label><br>
-                    <label><input type="checkbox" name="model" value="retina_net">RetinaNet</label><br>
+        <div id="analysis-panel-content" class="panel-content scrollable">
+
+            <div class="outside-div-elems">
+                <div class="analysis-section-header">
+                    <h3>Models 🤖</h3>
+                    <label class="main-checkbox">
+                        <input type="checkbox" id="select_all_models"> Select All
+                    </label>
                 </div>
             </div>
-            <div id="preproc-selection">
-                <h3>Последовність препроцесінга 🛠️:</h3>
-                <label for="preproc-file-input">Завантажити файл пайплайна (.json):</label><br>
-                <input type="file" id="preproc-file-input" accept=".json"><br>
-                <button id="show-preproc-scheme-btn" type="button" class="single-pretty-button">👁️ Показати пайплайн препроцесінга</button><br>
+
+            <div class="outside-div-elems">
+                <div id="model-selection" class="grid-selection">
+                    <div class="model-group">
+                        <h4>YOLO v11</h4>
+                        <label><input type="checkbox" name="model" value="yolo_11_n"> Nano</label>
+                        <label><input type="checkbox" name="model" value="yolo_11_s"> Small</label>
+                        <label><input type="checkbox" name="model" value="yolo_11_m"> Medium</label>
+                        <label><input type="checkbox" name="model" value="yolo_11_l"> Large</label>
+                        <label><input type="checkbox" name="model" value="yolo_11_x"> X-Large</label>
+                    </div>
+                    <div class="model-group">
+                        <h4>YOLO v10</h4>
+                        <label><input type="checkbox" name="model" value="yolo_10_n"> Nano</label>
+                        <label><input type="checkbox" name="model" value="yolo_10_s"> Small</label>
+                        <label><input type="checkbox" name="model" value="yolo_10_m"> Medium</label>
+                        <label><input type="checkbox" name="model" value="yolo_10_b"> Big</label>
+                        <label><input type="checkbox" name="model" value="yolo_10_l"> Large</label>
+                        <label><input type="checkbox" name="model" value="yolo_10_x"> X-Large</label>
+                    </div>
+                    <div class="model-group">
+                        <h4>YOLO v9</h4>
+                        <label><input type="checkbox" name="model" value="yolo_9_t"> Tiny</label>
+                        <label><input type="checkbox" name="model" value="yolo_9_s"> Small</label>
+                        <label><input type="checkbox" name="model" value="yolo_9_m"> Medium</label>
+                        <label><input type="checkbox" name="model" value="yolo_9_c"> Compact</label>
+                        <label><input type="checkbox" name="model" value="yolo_9_e"> Extra</label>
+                    </div>
+                    <div class="model-group">
+                        <h4>YOLO v8</h4>
+                        <label><input type="checkbox" name="model" value="yolo_8_n"> Nano</label>
+                        <label><input type="checkbox" name="model" value="yolo_8_s"> Small</label>
+                        <label><input type="checkbox" name="model" value="yolo_8_m"> Medium</label>
+                        <label><input type="checkbox" name="model" value="yolo_8_l"> Large</label>
+                        <label><input type="checkbox" name="model" value="yolo_8_x"> X-Large</label>
+                    </div>
+                    <div class="model-group">
+                        <h4>Others</h4>
+                        <label><input type="checkbox" name="model" value="faster_rcnn"> Faster R-CNN</label>
+                        <label><input type="checkbox" name="model" value="mask_rcnn"> Mask R-CNN</label>
+                        <label><input type="checkbox" name="model" value="ssd"> SSD</label>
+                        <label><input type="checkbox" name="model" value="detr"> DETR</label>
+                        <label><input type="checkbox" name="model" value="retina_net">RetinaNet</label>
+                    </div>
+                </div>
             </div>
-            <button id="run-analysis-btn" class="run-analysis-btn">Розпочати аналіз ▶️</button>
-            <div id="analysis-process">
-                <h3 id="analysis-welcome-text">Зараз відбувається магія і трошки аналіза</h3>
+
+            <div id="preproc-selection" class="outside-div-elems">
+                <h3>Preprocessing Pipeline 🛠️</h3>
+
+                <input type="file" id="preproc-file-input" accept=".json">
+                <label for="preproc-file-input" class="file-upload-label" id="file-label-text">
+                    📂 Click to load pipeline (.json)
+                </label>
+
+                <button id="show-preproc-scheme-btn" type="button" class="secondary-btn">
+                    👁️ Show Pipeline Scheme
+                </button>
+            </div>
+
+            <button id="run-analysis-btn" class="action-btn main-action outside-div-elems">Start Analysis ▶️</button>
+
+            <div id="analysis-process" style="display: none;">
+                <h3 id="analysis-welcome-text">Magic in progress... ✨</h3>
                 <dotlottie-player id="analysis-loader"
                     src="https://lottie.host/daa85c4f-630f-4c0b-8e7c-318f4ff57144/oNaOJbftGi.lottie"
-                    background="transparent" speed="1" style="width: 300px; height: 300px" loop
+                    background="transparent" speed="1" style="width: 200px; height: 200px" loop
                     autoplay></dotlottie-player>
-                <h2 id="analysis-step"></h2>
-                <h3 id="analysis-message-text"></h3>
+                <h2 id="analysis-step">Initializing</h2>
+                <h3 id="analysis-message-text">Please wait</h3>
+
                 <audio id="bg-analysis-music" loop style="display: none;">
-                    <source src="{{ url_for('static', filename='audio/bg_music.mp3') }}" type="audio/mpeg">
+                    <source src="../static/audio/bg_music.mp3" type="audio/mpeg">
                 </audio>
                 <audio id="done-sound" style="display: none;">
-                    <source src="{{ url_for('static', filename='audio/done_music.mp3') }}" type="audio/mpeg">
+                    <source src="../static/audio/done_music.mp3" type="audio/mpeg">
                 </audio>
             </div>
-            <div id="analysis-done-div">
-                <h1>✅</h1>
-                <h2>Аналіз завершено!</h2>
-                <button id="analysis-done-btn">OK</button>
+
+            <div id="analysis-done-div" style="display: none; flex-direction: column; align-items: center;">
+                <div style="font-size: 60px;">✅</div>
+                <h2>Analysis Complete!</h2>
+                <button id="analysis-done-btn" class="action-btn">Awesome</button>
             </div>
         </div>
     </div>
 
-    <div id="preproc-scheme-modal" class="message-box">
-        <h2>Пайплайн препроцесінга:</h2>
-        <div id="canvas-container" style="overflow-x: auto; width: 100%;">
-            <canvas id="preproc-canvas" height="180"></canvas>
+    <div id="preproc-scheme-modal" class="message-box" style="width: auto; max-width: 95vw;">
+        <div class="message-content" style="flex-direction: column;">
+            <h3>Preprocessing Pipeline Scheme</h3>
+            <div id="canvas-container" style="overflow-x: auto; width: 100%; display: flex; justify-content: center;">
+                <canvas id="preproc-canvas"></canvas>
+            </div>
         </div>
-        <button class="ok-button" id="preproc-scheme-modal-ok-btn">OK</button>
+        <button class="ok-button" id="preproc-scheme-modal-ok-btn">Close</button>
     </div>
 
     <div id="message-box" class="message-box">
         <div class="message-content">
-            <img src="https://cdn-icons-png.flaticon.com/512/190/190411.png" alt="Info Icon" class="message-icon" />
-            <p class="message-text">Це інформаційне повідомлення для користувача.</p>
+            <p class="message-text">Info message.</p>
         </div>
-        <button class="ok-button" id="message-box-ok-btn">ОК</button>
+        <button class="ok-button" id="message-box-ok-btn">OK</button>
     </div>
 
     <div id="confirm-box" class="message-box" style="display:none;">
         <div class="message-content">
-            <img src="../static/images/quest.png" alt="Confirm Icon" class="message-icon" />
-            <p class="message-text" id="confirm-text">Підтвердження дії</p>
+            <p class="message-text" id="confirm-text">Confirm action</p>
         </div>
-        <div style="display: flex; justify-content: center; gap: 16px;">
-            <button class="ok-button" id="confirm-ok-btn">OK</button>
-            <button class="ok-button" id="confirm-cancel-btn" style="background-color:#d9534f;">Відмінити</button>
+        <div class="modal-actions">
+            <button class="ok-button" id="confirm-ok-btn">Yes</button>
+            <button class="cancel-button" id="confirm-cancel-btn">Cancel</button>
         </div>
     </div>
 
     <div id="prompt-box" class="message-box" style="display:none;">
         <div class="message-content">
-            <img src="../static/images/enter.png" alt="Prompt Icon" class="message-icon" />
-            <div style="flex: 1; text-align: left;">
-                <p class="message-text" id="prompt-text">Ваш вміст:</p>
-                <input type="text" id="prompt-input"
-                    style="width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #ccc; margin-top: 8px; font-size: 16px;" />
-            </div>
+            <p class="message-text" id="prompt-text">Enter value:</p>
+            <input type="text" id="prompt-input" />
         </div>
-        <div style="display: flex; justify-content: center; gap: 16px;">
+        <div class="modal-actions">
             <button class="ok-button" id="prompt-ok-btn">OK</button>
-            <button class="ok-button" id="prompt-cancel-btn" style="background-color:#d9534f;">Відмінити</button>
+            <button class="cancel-button" id="prompt-cancel-btn">Cancel</button>
         </div>
     </div>
-
-    <div id="connection-lost-overlay" class="connection-lost-overlay" style="display: none;">
-        <div class="connection-lost-box">
-            <img src="/static/images/no-internet.png" alt="No connection" class="connection-lost-icon" />
-            <p class="connection-lost-text">З'єднання із сервером втрачено</p>
-        </div>
-    </div>
-
-    <!--========================================-->
-    <!-- КОНТЕКСТНІ МЕНЮШКИ (З'ЯВЛЯЮТЬСЯ ПО ПКМ)-->
-    <!--========================================-->
 
     <div id="context-menu-bb" class="context-menu">
-        <div class="context-menu-item" id="ctx-bb-change-class">✏️ Змінити клас</div>
-        <div class="context-menu-item" id="ctx-bb-duplicate">📑 Дублювати</div>
-        <div class="context-menu-item" id="ctx-bb-copy">📋 Копіювати</div>
+        <div class="context-menu-item" id="ctx-bb-change-class">✏️ Edit Class</div>
+        <div class="context-menu-item" id="ctx-bb-duplicate">📑 Duplicate</div>
+        <div class="context-menu-item" id="ctx-bb-copy">📋 Copy</div>
         <div class="context-menu-separator"></div>
-        <div class="context-menu-item delete" id="ctx-bb-delete">🗑️ Видалити</div>
+        <div class="context-menu-item delete" id="ctx-bb-delete">🗑️ Delete</div>
     </div>
 
-    <!--========================================-->
-    <!-- ПІДКЛЮЧЕННЯ СКРИПТІВ-->
-    <!--========================================-->
+    <div id="connection-lost-overlay" class="connection-lost-overlay">
+        <div class="connection-lost-box">
+            <div class="connection-lost-icon">📡</div>
+            <p class="connection-lost-text">Connection Lost</p>
+            <p class="connection-lost-subtext">Attempting to reconnect...</p>
+        </div>
+    </div>
 
     <script src="https://unpkg.com/@dotlottie/player-component@2.7.12/dist/dotlottie-player.mjs" type="module"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>

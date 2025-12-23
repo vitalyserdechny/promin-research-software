@@ -1,114 +1,162 @@
 /**
- * Модуль для работы с модальными окнами сообщений, подтверждений и ввода данных 🔥
- * 
- * Функционал:
- * - Показ сообщений в виде модальных окон с различными типами (информация, предупреждение, ошибка)
- * - Показ диалогов подтверждения с функцией обратного вызова
- * - Показ диалогов ввода данных с функцией обратного вызова
- * 
- * Автор: Сердечный Виталий ♥️
+ * Module for Modal Dialogs (Alerts, Confirms, Prompts)
+ * Styled with "Cute Science" aesthetic.
+ * Author: Vitalii Serdechnyi 💜
  */
 
-// Показать сообщение в виде модального окна
-// message - текст сообщения, type - тип сообщения (info, warning, error)
-function showMessageBox(message, type = 'info') {
-    const messageBox = document.getElementById('message-box');
-    const messageText = document.querySelector('.message-text');
-    const messageIcon = document.querySelector('.message-icon');
+// --- INTERNAL HELPERS (Renamed to avoid conflict) ---
 
-    messageText.innerText = '';
-    messageText.innerHTML = message;
-
-    if (type === 'info') {
-        messageIcon.src = '../static/images/information.png'; // Иконка информации
-    } else if (type === 'warning') {
-        messageIcon.src = '../static/images/warning.png'; // Иконка предупреждения
-    } else if (type === 'error') {
-        messageIcon.src = '../static/images/error.png'; // Иконка ошибки
-    }
-
-    messageBox.style.display = 'block';
-    document.body.style.overflow = 'hidden';
+function msgBoxOpen(element) {
+    element.style.display = 'block';
+    element.style.zIndex = '2147483647'; // Force on top
+    // Small delay to allow CSS display change to register before opacity transition
+    requestAnimationFrame(() => {
+        element.classList.add('active');
+    });
+    // Optional: document.body.style.overflow = 'hidden'; 
 }
 
-// Показать диалог подтверждения
-// message - текст сообщения, callback - функция обратного вызова
+function msgBoxClose(element) {
+    element.classList.remove('active');
+    setTimeout(() => {
+        element.style.display = 'none';
+        // document.body.style.overflow = 'auto'; 
+    }, 300); // Match CSS transition duration
+}
+
+// Helper: Set Icon (Handles switching from img to text/emoji)
+function setModalIcon(container, iconEmoji) {
+    // 1. Пытаемся найти существующую иконку
+    let iconEl = container.querySelector('.message-icon');
+    
+    // 2. Если ее нет (в HTML ты ее не добавил), создаем её на лету
+    if (!iconEl) {
+        iconEl = document.createElement('div');
+        iconEl.className = 'message-icon';
+        // Вставляем в начало контента
+        container.prepend(iconEl);
+    }
+    
+    // 3. Если это старый IMG тег, меняем на DIV
+    if (iconEl.tagName === 'IMG') {
+        const newIcon = document.createElement('div');
+        newIcon.className = 'message-icon';
+        iconEl.parentNode.replaceChild(newIcon, iconEl);
+        iconEl = newIcon;
+    }
+
+    iconEl.innerText = iconEmoji;
+}
+
+// ==========================================
+// 1. MESSAGE BOX (Info/Warning/Error)
+// ==========================================
+function showMessageBox(message, type = 'info') {
+    const messageBox = document.getElementById('message-box');
+    if (!messageBox) return console.error("Message box HTML missing");
+
+    const messageText = messageBox.querySelector('.message-text');
+    const messageContent = messageBox.querySelector('.message-content');
+
+    messageText.innerHTML = message;
+
+    // Select Emoji based on type
+    let emoji = 'ℹ️';
+    if (type === 'warning') emoji = '⚠️';
+    if (type === 'error') emoji = '🛑';
+    if (type === 'success') emoji = '✅';
+
+    setModalIcon(messageContent, emoji);
+    msgBoxOpen(messageBox); // Используем новое имя
+}
+
+// ==========================================
+// 2. CONFIRM BOX (Yes/No)
+// ==========================================
 function showConfirmBox(message, callback) {
     const confirmBox = document.getElementById('confirm-box');
+    if (!confirmBox) return;
+
     const confirmText = document.getElementById('confirm-text');
+    const confirmContent = confirmBox.querySelector('.message-content');
 
     confirmText.innerHTML = message;
-    confirmBox.style.display = 'block';
-    document.body.style.overflow = 'hidden';
+    setModalIcon(confirmContent, '❓'); 
+
+    msgBoxOpen(confirmBox); // Используем новое имя
 
     const okBtn = document.getElementById('confirm-ok-btn');
     const cancelBtn = document.getElementById('confirm-cancel-btn');
 
-    function cleanup() {
-        confirmBox.style.display = 'none';
-        document.body.style.overflow = 'auto';
-        okBtn.removeEventListener('click', onOk);
-        cancelBtn.removeEventListener('click', onCancel);
-    }
+    // Удаляем старые листенеры (клонированием), чтобы не множить их
+    const newOk = okBtn.cloneNode(true);
+    const newCancel = cancelBtn.cloneNode(true);
+    okBtn.parentNode.replaceChild(newOk, okBtn);
+    cancelBtn.parentNode.replaceChild(newCancel, cancelBtn);
 
-    function onOk() {
-        cleanup();
+    newOk.addEventListener('click', () => {
+        msgBoxClose(confirmBox);
         callback(true);
-    }
+    });
 
-    function onCancel() {
-        cleanup();
+    newCancel.addEventListener('click', () => {
+        msgBoxClose(confirmBox);
         callback(false);
-    }
-
-    okBtn.addEventListener('click', onOk);
-    cancelBtn.addEventListener('click', onCancel);
+    });
 }
 
+// ==========================================
+// 3. PROMPT BOX (Input)
+// ==========================================
 function showPromptBox(message, defaultValue = '', callback) {
     const promptBox = document.getElementById('prompt-box');
+    if (!promptBox) return;
+
     const promptText = document.getElementById('prompt-text');
     const promptInput = document.getElementById('prompt-input');
+    const promptContent = promptBox.querySelector('.message-content');
 
     promptText.textContent = message;
     promptInput.value = defaultValue;
+    setModalIcon(promptContent, '✏️'); 
 
-    promptBox.style.display = 'block';
-    document.body.style.overflow = 'hidden';
+    msgBoxOpen(promptBox); // Используем новое имя
 
     const okBtn = document.getElementById('prompt-ok-btn');
     const cancelBtn = document.getElementById('prompt-cancel-btn');
 
-    function cleanup() {
-        promptBox.style.display = 'none';
-        document.body.style.overflow = 'auto';
-        okBtn.removeEventListener('click', onOk);
-        cancelBtn.removeEventListener('click', onCancel);
-    }
+    // Чистим листенеры
+    const newOk = okBtn.cloneNode(true);
+    const newCancel = cancelBtn.cloneNode(true);
+    const newInput = promptInput.cloneNode(true); // Input тоже клонируем, чтобы убрать onKey
+    
+    okBtn.parentNode.replaceChild(newOk, okBtn);
+    cancelBtn.parentNode.replaceChild(newCancel, cancelBtn);
+    promptInput.parentNode.replaceChild(newInput, promptInput);
 
-    function onOk() {
-        const value = promptInput.value;
-        cleanup();
-        callback({ confirmed: true, value });
-    }
+    const finalize = (result) => {
+        msgBoxClose(promptBox);
+        callback(result);
+    };
 
-    function onCancel() {
-        cleanup();
-        callback({ confirmed: false, value: null });
-    }
+    newOk.addEventListener('click', () => finalize({ confirmed: true, value: newInput.value }));
+    newCancel.addEventListener('click', () => finalize({ confirmed: false, value: null }));
+    
+    newInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') finalize({ confirmed: true, value: newInput.value });
+        if (e.key === 'Escape') finalize({ confirmed: false, value: null });
+    });
 
-    okBtn.addEventListener('click', onOk);
-    cancelBtn.addEventListener('click', onCancel);
-
-    promptInput.focus();
+    setTimeout(() => newInput.focus(), 100);
 }
 
+// Initialize Global Close Button for simple Message Box
 document.addEventListener("DOMContentLoaded", function () {
     const okBtn = document.getElementById('message-box-ok-btn');
-
-    okBtn.addEventListener('click', function () {
-        const messageBox = document.getElementById('message-box');
-        messageBox.style.display = 'none';
-        document.body.style.overflow = 'auto';
-    });
+    if (okBtn) {
+        okBtn.addEventListener('click', function () {
+            const messageBox = document.getElementById('message-box');
+            msgBoxClose(messageBox);
+        });
+    }
 });

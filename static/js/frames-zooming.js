@@ -21,6 +21,13 @@ function setTransform() {
     container.style.transform = `translate(${transformState.pointX}px, ${transformState.pointY}px) scale(${transformState.scale})`;
 }
 
+function updateZoomUI(scale) {
+    const zoomText = document.getElementById('zoom-level');
+    if (zoomText) {
+        zoomText.innerText = Math.round(scale * 100) + '%';
+    }
+}
+
 // 1. ЗУМ (Колесико мыши)
 viewer.addEventListener('wheel', (e) => {
     e.preventDefault(); // Чтобы страница не скроллилась
@@ -36,6 +43,7 @@ viewer.addEventListener('wheel', (e) => {
         transformState.pointY = e.clientY - (ys * newScale);
         transformState.scale = newScale;
         setTransform();
+        updateZoomUI(newScale);
     }
 });
 
@@ -77,6 +85,7 @@ viewer.addEventListener('dblclick', () => {
     transformState.pointX = 0;
     transformState.pointY = 0;
     setTransform();
+    updateZoomUI(1);
 });
 
 window.transformState = transformState;

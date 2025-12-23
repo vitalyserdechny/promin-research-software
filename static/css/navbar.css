@@ -1,54 +1,123 @@
 /**
-  * 📂 Стили для навигационного меню с выпадающим списком
-  * Оформление горизонтального навбара и вложенных пунктов меню.
-  * Включает стили для ссылок, эффектов наведения 🔗 и выпадающих подменю ⬇️.
-  * Выпадающее меню появляется при наведении на родительский пункт.
+  * 📂 STYLES FOR NAVIGATION MENU
+  * "Cute Science" Edition
+  * Features: Glassmorphism, Soft Shadows, Smooth Animations
 **/
 
+@import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@500;700&display=swap');
+
+/* --- BASE NAVBAR --- */
 .navbar {
-  padding: 0;
-  margin: 0;
+    padding: 0;
+    margin: 0;
+    font-family: 'Quicksand', sans-serif;
 }
 
 .nav-menu {
-  list-style: none;
-  display: flex;
-  margin: 0;
-  padding: 0;
+    list-style: none;
+    display: flex;
+    margin: 0;
+    padding: 0;
+    gap: 5px; 
 }
 
 .nav-item {
-  position: relative;
+    position: relative;
 }
 
-.nav-item a {
-  display: block;
-  padding: 10px 20px;
-  color: black;
-  text-decoration: none;
-  font-family: 'Fira Sans', sans-serif;
+/* --- LINKS (TOP LEVEL) --- */
+.nav-item > a {
+    display: block;
+    padding: 10px 18px;
+    color: #444; /* Мягкий темно-серый */
+    text-decoration: none;
+    font-weight: 700;
+    font-size: 15px;
+    border-radius: 12px; /* Скругление при наведении */
+    transition: all 0.2s ease;
 }
 
-.nav-item a:hover {
-    color: rgb(236, 118, 75);
+/* Эффект при наведении: легкий фиолетовый фон */
+.nav-item > a:hover,
+.nav-item.active > a {
+    color: #6a11cb;
+    background-color: rgba(161, 140, 209, 0.1); 
 }
 
+/* --- DROPDOWN MENU (THE CARD) --- */
 .dropdown-menu {
-  display: none;
-  position: absolute;
-  background-color: white;
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  min-width: 250px;
-  z-index: 1000;
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    
+    background-color: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    
+    min-width: 200px;
+    padding: 8px;
+    margin-top: 15px; /* Увеличил отступ для красоты */
+    
+    border-radius: 16px;
+    border: 1px solid rgba(255,255,255, 0.5);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+    
+    z-index: 1000;
+    
+    opacity: 0;
+    transform: translateY(10px);
+    transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.dropdown-menu::before {
+    content: "";
+    position: absolute;
+    top: -20px;
+    left: 0;
+    width: 100%;
+    height: 20px; 
+    background: transparent; 
+    display: block;
+}
+
+/* --- DROPDOWN ITEMS --- */
+.dropdown-menu li {
+    list-style: none;
 }
 
 .dropdown-menu li a {
-  padding: 10px 20px;
-  color: black;
+    display: block;
+    padding: 10px 15px;
+    color: #555;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 500;
+    border-radius: 10px;
+    transition: background 0.2s, color 0.2s;
 }
 
+/* Ховер внутри выпадающего списка */
+.dropdown-menu li a:hover {
+    background-color: #f5f7fa;
+    color: #6a11cb;
+    transform: translateX(4px); /* Легкий сдвиг вправо */
+}
+
+/* --- HOVER BEHAVIOR (SHOW MENU) --- */
 .nav-item.dropdown:hover .dropdown-menu {
-  display: block;
+    display: block;
+    /* Запускаем анимацию */
+    animation: dropdownFadeIn 0.3s forwards;
+}
+
+@keyframes dropdownFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
