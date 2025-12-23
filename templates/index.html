@@ -1,65 +1,77 @@
 <!DOCTYPE html>
-<html lang="uk">
+<html lang="en">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PROMIN - утіліта для досліджень у галузі CV з відкритим кодом</title>
+    <title>PROMIN: A friendly open-source tool for Computer Vision research</title>
+    
     <link rel="stylesheet" href="../static/css/index.css">
+    
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Righteous&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Righteous&family=Quicksand:wght@500;700&display=swap" rel="stylesheet">
+    
     <link rel="icon" href="../static/images/favicon_new.ico" type="image/x-icon">
 </head>
 
 <body>
-    <div class="container">
-        <img src="../static/images/logo_new_1.png" alt="logo" class="logo">
+
+    <main class="container">
+        <img src="../static/images/logo (2).png" alt="Promin Logo" class="logo">
         <h1 class="title">PROMIN</h1>
+        
         <div class="control-buttons-containter">
-            <button id="new-project-btn" class="btn">Новий проект</button>
-            <button id="open-project-btn" class="btn">Відкрити проект</button>
+            <button id="new-project-btn" class="btn">New Project</button>
+            <button id="open-project-btn" class="btn">Open Project</button>
         </div>
-    </div>
+    </main>
 
     <div id="upload-modal" class="modal-overlay">
         <div class="modal">
-            <button class="close-btn">×</button>
+            <button class="close-btn" aria-label="Close modal">×</button>
             <form action="/upload" method="post" enctype="multipart/form-data">
+                
                 <div class="upload-modal-section">
-                    <label for="project-name">Введіть назву проекта:</label>
-                    <input type="text" name="project_name" id="project-name" placeholder="Назва проекта" required>
+                    <label for="project-name">Enter Project Name:</label>
+                    <input type="text" name="project_name" id="project-name" placeholder="My New Project" required>
                 </div>
-                <div class="upload-modal-section">
+
+                <div class="upload-modal-section checkbox-row">
                     <input type="checkbox" name="annotate_frames" id="annotate-frames" checked>
-                    <label for="annotate-frames">Стартова анотація з YOLOv11</label>
+                    <label for="annotate-frames">Auto-annotate with YOLOv11</label>
                 </div>
+
                 <div class="upload-modal-section">
-                    <label for="video" style="margin-top: 15px;">Оберіть відеофайл:</label>
-                    <input type="file" name="video" id="video" accept="video/*" style="display: block;" required>      
+                    <label for="video">Select Video File:</label>
+                    <input type="file" name="video" id="video" accept="video/*" required>      
                 </div>
-                <div class="upload-modal-section" style="text-align: center;">
-                    <button type="submit" class="btn">Створити проект</button>
-                </div>
+
+                <button type="submit" class="btn">Create Project</button>
             </form>
         </div>
     </div>
 
     <div id="open-modal" class="modal-overlay">
         <div class="modal">
-            <button class="close-btn">×</button>
+            <button class="close-btn" aria-label="Close modal">×</button>
             <form action="/open" method="get">
-                <label for="project" id="project-select-label">Оберіть проект для відкриття:</label>
+                
+                <label for="projects-select" id="project-select-label">Select Project to Open:</label>
                 <select name="project_name" id="projects-select" required>
-                </select>
-                <button type="submit" id="open-project-submit-btn" class="btn">Відкрити проект</button>
+                    </select>
+
+                <button type="submit" id="open-project-submit-btn" class="btn">Open Project</button>
             </form>
         </div>
     </div>
 
-    <div class="footer">
-        <p>© PROMIN - утіліта для досліджень у галузі CV з відкритим кодом</p>
-    </div>
+    <footer class="footer">
+        <p>PROMIN: A friendly open-source tool for Computer Vision research</p>
+        <div class="author-credit">
+            Crafted with <span class="heart-beat">💜</span> by <span class="author-name">Vitalii Serdechnyi</span>
+        </div>
+    </footer>
 
     <script src="../static/js/index.js"></script>
 </body>

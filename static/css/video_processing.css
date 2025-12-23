@@ -1,3 +1,7 @@
+/* --- IMPORTS & FONTS --- */
+@import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@500;700&display=swap');
+
+/* --- LAYOUT & BASE --- */
 body {
     margin: 0;
     padding: 0;
@@ -6,56 +10,136 @@ body {
     align-items: center;
     min-height: 100vh;
     min-width: 100vw;
+    /* Шрифт Quicksand для всего тела */
+    font-family: "Quicksand", "Fira Sans", sans-serif;
+    font-weight: 500;
+    overflow: hidden; /* Чтобы не появлялись скроллы */
 }
 
+/* Фон-анимация (Нейроны) */
+canvas {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: -1; /* Строго на заднем плане */
+}
+
+/* --- PROCESSING CARD --- */
+#processing-status {
+    width: 500px;
+    padding: 40px;
+    
+    /* Стеклянный стиль (как модалки на главной) */
+    background-color: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(10px);
+    
+    /* Скругления и тени */
+    border-radius: 30px;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    
+    text-align: center;
+    /* Легкая анимация появления */
+    animation: floatIn 0.8s ease-out;
+}
+
+@keyframes floatIn {
+    from { transform: translateY(20px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+/* Текст статуса */
 #status-message {
-    font-family: 'Courier New';
-    font-size: 14pt;
+    font-family: "Quicksand", sans-serif;
+    font-size: 18pt; /* Крупнее и читабельнее */
+    font-weight: 700;
+    color: #555;
+    margin-top: 0;
+    margin-bottom: 25px;
 }
 
+/* --- PROGRESS BAR --- */
+/* Контейнер (серая подложка) */
+#progress-bar-container {
+    width: 100%;
+    background-color: #eee; /* Светло-серый трек */
+    border-radius: 15px;
+    height: 25px; /* Чуть выше */
+    overflow: hidden; /* Чтобы полоска не вылезала за скругления */
+}
+
+/* Сама цветная полоска */
 #progress-bar {
     width: 0%;
-    background-color: rgb(44, 192, 44);
-    height: 20px;
-    border-radius: 10px;
+    height: 100%;
+    border-radius: 15px;
+    
+    /* Тот же градиент, что у кнопки New Project (связь стилей) */
+    background-image: linear-gradient(90deg, #70e1f5 0%, #ffd194 100%);
+    background-color: #70e1f5;
+    
+    /* Плавность движения */
+    transition: width 0.4s ease-in-out;
+    
+    /* Эффект свечения */
+    box-shadow: 0 0 10px rgba(112, 225, 245, 0.5);
 }
 
-#processing-status {
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    border-radius: 10px;
-    padding: 10px;
-    width: 500px;
-    backdrop-filter: blur(4px);
-    background-color: rgba(255, 255, 255, 0.5);
-}
-
+/* --- FOOTER & AUTHOR --- */
 .footer {
     position: fixed;
     bottom: 0;
     left: 0;
     width: 100%;
+    
+    display: flex;
+    flex-direction: column;
+    align-items: center;     
+    justify-content: center;
+    gap: 8px;                
+    
+    padding: 15px 0;        
+    box-sizing: border-box;  
+    
+    font-size: 11pt;
+    color: #888;
+    font-family: "Quicksand", sans-serif;
+    font-weight: 600;
+    
+    /* Фон-стекло */
+    background: rgba(255, 255, 255, 0.6);
+    backdrop-filter: blur(2px);
+    z-index: 100; 
+}
+
+.footer p {
+    margin: 0;
+    padding: 0;
     text-align: center;
-    padding: 10px;
-    font-size: 14pt;
-    color: #333;
-    font-family: 'Courier New', Courier, monospace;
 }
 
-canvas {
-    position: fixed;
-    top: 0;
-    left: 0;
-    z-index: -1;
+.author-credit {
+    font-size: 10pt;
+    opacity: 0.8;
+    text-align: center;
 }
 
-@keyframes pulse {
+.author-name {
+    color: #6a11cb;
+    font-weight: 700;
+}
 
-    0%,
-    100% {
-        opacity: 1;
-    }
+.heart-beat {
+    display: inline-block;
+    color: #a18cd1;
+    animation: heartbeat 1.5s infinite;
+}
 
-    50% {
-        opacity: 0.6;
-    }
+@keyframes heartbeat {
+    0% { transform: scale(1); }
+    10% { transform: scale(1.1); }
+    20% { transform: scale(1); }
+    30% { transform: scale(1.1); }
+    40% { transform: scale(1); }
+    100% { transform: scale(1); }
 }

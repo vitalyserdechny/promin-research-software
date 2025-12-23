@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PROMIN - утіліта для досліджень у галузі CV з відкритим кодом</title>
+    <title>PROMIN: A friendly open-source tool for Computer Vision research</title>
     <link rel="stylesheet" href="../static/css/video_processing.css">
     <link rel="icon" href="../static/images/favicon_new.ico" type="image/x-icon">
 </head>
@@ -13,13 +13,20 @@
     <canvas id="neuralCanvas"></canvas>
 
     <div id="processing-status">
-        <p id="status-message">Вилучення кадрів з відеофайлу: 0</p>
-        <div id="progress-bar"></div>
+        <p id="status-message">Extracting frames: 0</p>
+
+        <div id="progress-bar-container"
+            style="width: 100%; background-color: #eee; border-radius: 15px; height: 25px; overflow: hidden;">
+            <div id="progress-bar"></div>
+        </div>
     </div>
 
-    <div class="footer">
-        <p>© 2025 PROMIN - утіліта для досліджень у галузі CV з відкритим кодом</p>
-    </div>
+    <footer class="footer">
+        <p>PROMIN: A friendly open-source tool for Computer Vision research</p>
+        <div class="author-credit">
+            Crafted with <span class="heart-beat">💜</span> by <span class="author-name">Vitalii Serdechnyi</span>
+        </div>
+    </footer>
 
     <script src="https://cdn.socket.io/4.0.1/socket.io.min.js"></script>
     <script src="../static/js/video_processing.js"></script>

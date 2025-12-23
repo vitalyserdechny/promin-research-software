@@ -1,3 +1,7 @@
+/* --- IMPORTS & FONTS --- */
+@import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@500;700&display=swap');
+
+/* --- LAYOUT & BASE --- */
 body {
     margin: 0;
     padding: 0;
@@ -6,25 +10,10 @@ body {
     align-items: center;
     min-height: 100vh;
     min-width: 100vw;
-    font-family: "Fira Sans", sans-serif;
-    font-weight: 400;
-    font-style: normal;
-}
-
-.logo {
-    width: 300px;
-    height: 300px;
-}
-
-.title {
-    font-size: 54pt;
-    color: #333;
-    margin-top: 20px;
-    margin-bottom: 10px;
-    text-align: center;
-    font-family: "Righteous", sans-serif;
-    font-weight: 400;
-    font-style: normal;
+    background: linear-gradient(to bottom, #ffffff 80%, #fff9f0 100%);
+    font-family: "Quicksand", "Fira Sans", sans-serif;
+    font-weight: 500;
+    overflow-x: hidden;
 }
 
 .container {
@@ -34,22 +23,93 @@ body {
     justify-content: center;
     width: 100%;
     height: 100%;
+    z-index: 1;
 }
 
-.btn{
-    border: none;
-    color: white;
-    background-color: #64ce67;
-    width: 180px;
-    height: 40px;
+/* --- FOOTER & AUTHOR --- */
+.footer {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    
+    display: flex;
+    flex-direction: column;
+    align-items: center;     
+    justify-content: center;
+    gap: 8px;                
+    
+    padding: 15px 0;        
+    box-sizing: border-box;  
+    
+    font-size: 11pt;
+    color: #888;
+    font-family: "Quicksand", sans-serif;
+    font-weight: 600;
+    
+    /* Фон-стекло */
+    background: rgba(255, 255, 255, 0.6);
+    backdrop-filter: blur(2px);
+    z-index: 100; 
+}
+
+.footer p {
+    margin: 0;
+    padding: 0;
     text-align: center;
-    font-size: 16px;
-    cursor: pointer;
-    margin: 5px auto;
-    border-radius: 15px;
-    transition: scale 0.5s ease;
 }
 
+.author-credit {
+    font-size: 10pt;
+    opacity: 0.8;
+    text-align: center;
+}
+
+.author-name {
+    color: #6a11cb;
+    font-weight: 700;
+}
+
+.heart-beat {
+    display: inline-block;
+    color: #a18cd1;
+    animation: heartbeat 1.5s infinite;
+}
+
+@keyframes heartbeat {
+    0% { transform: scale(1); }
+    10% { transform: scale(1.1); }
+    20% { transform: scale(1); }
+    30% { transform: scale(1.1); }
+    40% { transform: scale(1); }
+    100% { transform: scale(1); }
+}
+
+/* --- BRANDING (Logo & Title) --- */
+.logo {
+    width: 250px;
+    height: auto;
+    filter: drop-shadow(0 10px 15px rgba(0,0,0,0.1));
+    transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.logo:hover {
+    transform: scale(1.05) rotate(3deg);
+}
+
+.title {
+    font-size: 60pt;
+    background: -webkit-linear-gradient(45deg, #6a11cb, #2575fc);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin: 10px 0 30px;
+    text-align: center;
+    font-family: "Righteous", sans-serif;
+    letter-spacing: 2px;
+    filter: drop-shadow(2px 4px 6px rgba(0,0,0,0.1));
+}
+
+/* --- BUTTONS --- */
 .control-buttons-containter {
     display: flex;
     flex-direction: column;
@@ -57,70 +117,123 @@ body {
     justify-content: center;
 }
 
+.btn {
+    border: none;
+    color: white;
+    width: 220px;
+    height: 55px;
+    font-size: 18px;
+    font-weight: 700;
+    cursor: pointer;
+    margin: 10px auto;
+    border-radius: 50px;
+    box-shadow: 0 4px 0 rgba(0,0,0,0.1), 0 10px 20px rgba(0,0,0,0.1);
+    transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-family: "Quicksand", sans-serif;
+}
+
 .btn:hover {
-    scale: 1.1;
+    transform: translateY(-2px);
+    filter: brightness(1.05);
 }
 
-#new-project-btn {
-    background-color: #64ce67;
+.btn:active {
+    transform: translateY(4px);
+    box-shadow: 0 0 0 rgba(0,0,0,0.1), 0 5px 10px rgba(0,0,0,0.1);
 }
 
-#open-project-btn {
-    background-color: #58acf1;
+/* Theme: Cyan/Orange (Create Project) */
+#new-project-btn, 
+#upload-modal .btn {
+    background-image: linear-gradient(90deg, #70e1f5 0%, #ffd194 100%);
+    background-color: #70e1f5;
 }
 
+/* Theme: Purple/Pink (Open Project) */
+#open-project-btn, 
+#open-modal .btn {
+    background-image: linear-gradient(90deg, #a18cd1 0%, #fbc2eb 100%);
+    background-color: #a18cd1;
+}
+
+/* --- FORMS & INPUTS --- */
 .upload-modal-section {
-    margin-top: 25px;
+    margin-top: 20px;
     width: 100%;
+    text-align: left;
+}
+
+.upload-modal-section label,
+#open-modal label {
+    font-weight: bold;
+    color: #555;
+    display: block;
+    margin-bottom: 8px;
+}
+
+/* Shared styles for Text Inputs and Selects */
+#upload-modal input[type="text"],
+#open-modal select {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 15px;
+    border-radius: 15px;
+    border: 2px solid #eee;
+    background-color: #fcfcfc;
+    font-size: 16px;
+    color: #555;
+    font-family: inherit;
+    transition: border-color 0.3s;
+}
+
+#upload-modal input[type="text"]:focus,
+#open-modal select:focus {
+    outline: none;
+    border-color: #a18cd1;
+    background-color: #fff;
 }
 
 #upload-modal input[type="file"] {
-    margin-top: 10px;
-    margin-bottom: 10px;
+    margin-top: 5px;
+    font-size: 14px;
 }
 
-#upload-modal input[type="text"] {
-    width: 95%;
-    padding: 10px;
-    border-radius: 5px;
-    border: 1px solid #ccc;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    margin-top: 10px;
-    margin-bottom: 5px;
-    font-size: 14px;
-    color: #333;
-    background-color: #f9f9f9;
-    appearance: none; /* Убирает стандартный стиль браузера */
-    display: block;
+/* Checkbox Alignment (Left aligned) */
+.upload-modal-section.checkbox-row {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    margin: 15px 0;
+}
+
+.upload-modal-section.checkbox-row input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
+    margin: 0 10px 0 0;
+    cursor: pointer;
+    accent-color: #70e1f5;
+}
+
+.upload-modal-section.checkbox-row label {
+    margin-bottom: 0;
+    display: inline-block;
+    cursor: pointer;
+}
+
+/* Open Project specific spacing */
+#open-modal label {
+    font-size: 18px;
+    font-weight: 700;
+    margin-bottom: 20px;
 }
 
 #open-modal select {
-    width: 100%;
-    padding: 10px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    background-color: #f9f9f9;
-    font-size: 16px;
-    color: #333;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    margin-top: 15px;
-    margin-bottom: 15px;
-    appearance: none; /* Убирает стандартный стиль браузера */
+    margin-top: 0;
 }
 
-.footer {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    width: 100%;
-    text-align: center;
-    padding: 10px;
-    font-size: 14pt;
-    color: #333;
-    font-family: 'Courier New', Courier, monospace;
-}
-
-/* Modal window styles */
+/* --- MODALS --- */
 .modal-overlay {
     position: fixed;
     top: 0;
@@ -128,7 +241,7 @@ body {
     width: 100vw;
     height: 100vh;
     background-color: rgba(0, 0, 0, 0);
-    display: none;
+    display: none; /* Hidden by default */
     justify-content: center;
     align-items: center;
     z-index: 999;
@@ -137,44 +250,108 @@ body {
 }
 
 .modal-overlay.active {
-    background-color: rgba(145, 145, 145, 0.4);
+    background-color: rgba(69, 58, 100, 0.3);
     opacity: 1;
-    backdrop-filter: blur(4px);
+    backdrop-filter: blur(5px);
 }
 
 .modal {
-    background-color: rgba(255, 255, 255, 0.9);
-    padding: 30px;
-    border-radius: 15px;
-    box-shadow: 0 10px 30px rgba(145, 145, 145, 0.25);
+    background-color: rgba(255, 255, 255, 0.95);
+    padding: 40px;
+    border-radius: 30px;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.15);
+    border: 1px solid rgba(255,255,255,0.5);
     max-width: 450px;
     width: 90%;
     position: relative;
-
+    text-align: center;
+    
+    /* Animation state: initial */
     transform: translateY(-20px) scale(0.96);
     opacity: 0;
     transition: transform 0.3s ease, opacity 0.3s ease;
 }
 
 .modal-overlay.active .modal {
+    /* Animation state: active */
     transform: translateY(0) scale(1);
     opacity: 1;
 }
 
 .modal .close-btn {
     position: absolute;
-    top: 10px;
-    right: 10px;
-    background: none;
+    top: 15px;
+    right: 15px;
+    width: 30px;
+    height: 30px;
+    background-color: #ff6b6b;
+    color: white;
     border: none;
     border-radius: 50%;
-    font-size: 20px;
+    font-size: 18px;
     cursor: pointer;
-    background-color: #ee4731;
-    color: white;
-    transition: background-color 0.3s ease;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: transform 0.2s, background-color 0.2s;
+    box-shadow: 0 4px 10px rgba(255, 107, 107, 0.4);
 }
 
 .modal .close-btn:hover {
-    background-color: #f07b6b;
+    background-color: #ff5252;
+    transform: scale(1.1);
+}
+
+/* Full width buttons inside modals */
+.modal .btn {
+    width: 100%;
+    margin-top: 20px;
+}
+
+/* --- SEASONAL PARTICLES (Magic Background) --- */
+
+.seasonal-particle {
+    position: fixed;
+    top: -50px; 
+    z-index: -1; 
+    pointer-events: none; 
+    user-select: none; 
+    animation-name: fall, sway, spin;
+    animation-timing-function: linear, ease-in-out, linear;
+    animation-iteration-count: infinite, infinite, infinite;
+}
+
+@keyframes fall {
+    0% {
+        top: -50px;
+        opacity: 0;
+    }
+    10% {
+        opacity: 0.8;
+    }
+    90% {
+        opacity: 0.8;
+    }
+    100% {
+        top: 105vh; 
+        opacity: 0;
+    }
+}
+
+@keyframes sway {
+    0%, 100% {
+        transform: translateX(0px);
+    }
+    50% {
+        transform: translateX(50px); /* Сдвиг вправо */
+    }
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
 }
