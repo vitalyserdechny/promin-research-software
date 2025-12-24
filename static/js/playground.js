@@ -156,7 +156,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // Обработчик клика по кнопке "Playground"
     enterPlaygroundBtn.addEventListener('click', function () {
-        playgroundPanel.classList.add('active');
+        window.openModal('playground-panel')
         fetch(`/initialize-playground?frame_index=${window.currentFrameIndex}`)
             .then(response => response.json())
             .then(data => {
@@ -327,7 +327,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // Обработчик клика по кнопке закрытия Playground-а
     closePlaygroundPanelBtn.addEventListener('click', function () {
-        playgroundPanel.classList.remove('active'); // Скрываем панель
+        window.closeModal('playground-panel');
         const overlay = document.getElementById('playground-bounding-boxes');
         overlay.innerHTML = '';
         clearPlaygroundLog();

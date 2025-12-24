@@ -767,30 +767,6 @@ input[type="text"] {
     background: #fdfdfd;
 }
 
-.playground-image-container-section {
-    flex: 1;
-    min-height: 200px;
-    background: #f8f9fa;
-    border-radius: 12px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    overflow: hidden;
-    border: 1px solid #eee;
-}
-
-.playground-log-output {
-    height: 120px;
-    flex-shrink: 0;
-    background: #2d3436;
-    color: #00cec9;
-    padding: 12px;
-    border-radius: 12px;
-    font-family: 'Fira Code', monospace;
-    font-size: 13px;
-    overflow-y: auto;
-}
-
 .panel-content img {
     max-width: 100%;
     max-height: 100%;
@@ -896,6 +872,185 @@ input[type="text"] {
     transform: scale(1.1);
 }
 
+/* ========================================= */
+/* 9. PLAYGROUND REDESIGN (IDE STYLE)        */
+/* ========================================= */
+
+/* Основной контейнер сетки */
+.playground-layout {
+    display: flex;
+    width: 100%;
+    height: 100%;
+}
+
+/* --- ЛЕВАЯ ЧАСТЬ (СЦЕНА) --- */
+.playground-stage {
+    flex: 1; /* Занимает всё свободное место */
+    background-color: #eef2f5; /* Светлый, но не белый фон */
+    background-image: 
+        linear-gradient(45deg, #e5e9ec 25%, transparent 25%), 
+        linear-gradient(-45deg, #e5e9ec 25%, transparent 25%), 
+        linear-gradient(45deg, transparent 75%, #e5e9ec 75%), 
+        linear-gradient(-45deg, transparent 75%, #e5e9ec 75%);
+    background-size: 20px 20px;
+    background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
+    
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    overflow: hidden;
+}
+
+.canvas-wrapper {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+    position: relative;
+    overflow: hidden;
+}
+
+#playground-frame-image {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+    border-radius: 4px;
+}
+
+.playground-toolbar {
+    height: 50px;
+    background: white;
+    border-top: 1px solid #ddd;
+    display: flex;
+    align-items: center;
+    padding: 0 20px;
+    gap: 15px;
+    box-shadow: 0 -2px 10px rgba(0,0,0,0.02);
+}
+
+.tool-btn {
+    background: #f1f3f5;
+    border: 1px solid #dcdcdc;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #555;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.tool-btn:hover {
+    background: #e9ecef;
+    color: #333;
+}
+
+.tool-info {
+    font-size: 13px;
+    color: #888;
+    margin-left: auto; /* Прижать вправо */
+    font-family: 'Fira Code', monospace;
+}
+
+/* --- ПРАВАЯ ЧАСТЬ (ТЕРМИНАЛ) --- */
+.playground-sidebar {
+    width: 450px; /* Фиксированная ширина консоли */
+    background: #1e1e1e; /* VS Code dark bg */
+    display: flex;
+    flex-direction: column;
+    border-left: 1px solid #333;
+}
+
+.terminal-header {
+    height: 40px;
+    background: #252526;
+    display: flex;
+    align-items: center;
+    padding: 0 15px;
+    border-bottom: 1px solid #333;
+}
+
+.terminal-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    margin-right: 6px;
+}
+.terminal-dot.red { background: #ff5f56; }
+.terminal-dot.yellow { background: #ffbd2e; }
+.terminal-dot.green { background: #27c93f; }
+
+.terminal-title {
+    color: #ccc;
+    font-size: 12px;
+    margin-left: 10px;
+    font-family: sans-serif;
+}
+
+.terminal-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 10px;
+    font-family: 'Fira Code', monospace;
+    font-size: 13px;
+}
+
+.terminal-logs {
+    margin: 0;
+    white-space: pre-wrap;
+    color: #d4d4d4;
+    line-height: 1.5;
+}
+
+/* Кастомный скроллбар для терминала */
+.terminal-body::-webkit-scrollbar {
+    width: 8px;
+}
+.terminal-body::-webkit-scrollbar-thumb {
+    background: #444; 
+    border-radius: 4px;
+}
+.terminal-body::-webkit-scrollbar-track {
+    background: #1e1e1e; 
+}
+
+.terminal-input-area {
+    padding: 15px;
+    background: #252526;
+    border-top: 1px solid #333;
+    display: flex;
+    align-items: center;
+}
+
+.prompt-sign {
+    color: #00cec9;
+    font-weight: bold;
+    margin-right: 10px;
+    font-family: monospace;
+    font-size: 16px;
+}
+
+#playground-command-input {
+    background: transparent;
+    border: none;
+    color: #fff;
+    font-family: 'Fira Code', monospace;
+    font-size: 14px;
+    padding: 0;
+    width: 100%;
+}
+
+#playground-command-input:focus {
+    outline: none;
+    box-shadow: none;
+}
+
+#playground-command-input::placeholder {
+    color: #666;
+}
+
 /* CLASSES MODAL */
 
 .class-summary-header {
@@ -960,4 +1115,75 @@ input[type="text"] {
 .frame-jump-count {
     font-size: 0.75rem;
     opacity: 0.8;
+}
+
+/* Color Popover */
+.color-popover {
+    position: fixed; /* Будем позиционировать JS-ом */
+    z-index: 2000;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+    border-radius: 12px;
+    padding: 10px;
+    width: 220px;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(10px);
+    transition: opacity 0.2s, transform 0.2s, visibility 0.2s;
+}
+
+.color-popover.visible {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+.color-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr); /* 5 в ряд */
+    gap: 6px;
+    margin-bottom: 10px;
+}
+
+.color-swatch {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    cursor: pointer;
+    border: 2px solid transparent;
+    transition: transform 0.1s, border-color 0.1s;
+}
+
+.color-swatch:hover {
+    transform: scale(1.2);
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+
+.color-popover-footer {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-top: 1px solid rgba(0,0,0,0.05);
+    padding-top: 8px;
+}
+
+/* Скрываем нативный инпут, но оставляем лейбл кликабельным */
+#custom-color-input {
+    width: 0;
+    height: 0;
+    opacity: 0;
+    position: absolute;
+}
+
+.custom-color-label {
+    font-size: 0.85rem;
+    color: #007bff;
+    cursor: pointer;
+    font-weight: 600;
+}
+
+.custom-color-label:hover {
+    text-decoration: underline;
 }
