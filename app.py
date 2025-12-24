@@ -120,49 +120,16 @@ def check_cuda_route():
 REPORTS ROUTES
 '''
 # *******************************************
-@app.route('/get-all-reports-info', methods=['GET'])
-def get_all_reports_info_route():
-    all_reports = []
+@app.route('/get-project-reports', methods=['GET'])
+def get_project_reports_route():
+    current_path = app.config.get('CURRENT_PROJECT_DIR')
+    if not current_path:
+        return jsonify([]) 
+        
+    project_folder = os.path.basename(current_path)
     
-    for project_dir in os.listdir(UPLOADS_DIR):
-        project_path = os.path.join(UPLOADS_DIR, project_dir)
-        
-        if not os.path.isdir(project_path):
-            continue
-        
-        project_name = project_dir
-        project_json_path = os.path.join(project_path, 'project.json')
-        if os.path.isfile(project_json_path):
-            try:
-                with open(project_json_path, 'r', encoding='utf-8') as pj_file:
-                    project_data = json.load(pj_file)
-                    project_name = project_data.get('project_name', project_name)
-            except Exception as e:
-                logging.error(f"An error occured while reading project.json in {project_path}: {e}")
-        
-        analysis_path = os.path.join(project_path, 'analysis')
-        if not os.path.isdir(analysis_path):
-            continue
-
-        # Ищем все JSON-файлы в папке analysis
-        for filename in os.listdir(analysis_path):
-            if filename.endswith('.json'):
-                file_path = os.path.join(analysis_path, filename)
-                try:
-                    with open(file_path, 'r', encoding='utf-8') as f:
-                        data = json.load(f)
-                        report_info = {
-                            "project_name": project_name,
-                            "dirname":  project_dir,
-                            "filename": filename,
-                            "timestamp": data.get("timestamp"),
-                            "datetime_iso": data.get("datetime_iso")
-                        }
-                        all_reports.append(report_info)
-                except Exception as e:
-                    logging.error(f"Reading error {file_path}: {e}")
-
-    return jsonify(all_reports)
+    reports = project_manager.get_project_reports(project_folder)
+    return jsonify(reports)
 
 @app.route('/get-selected-report', methods=['GET'])
 def get_selected_report_route():

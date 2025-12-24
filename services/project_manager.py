@@ -1,7 +1,7 @@
 import math
 import os, json, glob
 import urllib
-from config import UPLOADS_DIR, FRAMES_DIR, OBJECT_DETECTIONS_DIR
+from config import UPLOADS_DIR, FRAMES_DIR, OBJECT_DETECTIONS_DIR, ANALYSIS_DIR
 
 class ProjectManager:
     def __init__(self, root_dir):
@@ -196,3 +196,38 @@ class ProjectManager:
             print(f"Error reading {file_path}: {e}")
             
         return annotations
+    
+    def get_project_reports(self, project_folder_name):
+        """
+        Возвращает список отчетов для указанного проекта.
+        """
+        reports = []
+        project_path = self.get_project_path(project_folder_name)
+        analysis_path = os.path.join(project_path, ANALYSIS_DIR)
+
+        if not os.path.exists(analysis_path):
+            return reports
+
+        meta = self.load_metadata(project_folder_name)
+        project_human_name = meta.get('project_name', project_folder_name) if meta else project_folder_name
+
+        for filename in os.listdir(analysis_path):
+            if filename.endswith('.json'):    
+                file_path = os.path.join(analysis_path, filename)
+                try:
+                    with open(file_path, 'r', encoding='utf-8') as f:
+                        data = json.load(f)
+                        reports.append({
+                            "project_name": project_human_name,
+                            "dirname": project_folder_name,
+                            "filename": filename,
+                            "timestamp": data.get("timestamp"),
+                            "datetime_iso": data.get("datetime_iso"),
+                            "models": data.get("models", []) # Полезно показать, какие модели были в отчете
+                        })
+                except Exception as e:
+                    print(f"Error reading report {file_path}: {e}")
+        
+        # Сортируем: свежие сверху
+        reports.sort(key=lambda x: x['timestamp'] or '', reverse=True)
+        return reports

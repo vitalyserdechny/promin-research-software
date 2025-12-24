@@ -202,51 +202,54 @@ document.addEventListener("DOMContentLoaded", function () {
                 console.error('Failed to load report:', error);
             });
 
-        selectReportPanel.classList.remove('active');
-        viewReportPanel.classList.add('active');
+        window.closeModal('select-report-panel');
+        window.openModal('view-report-panel');
     })
 
-    // Открытие панели выбора отчета и загрузка всех доступных отчетов
+    // Открытие панели выбора отчета и загрузка доступных отчетов ТЕКУЩЕГО ПРОЕКТА
     selectReportBtn.addEventListener('click', function () {
-        fetch(`/get-all-reports-info`)
+        // Меняем URL на новый
+        fetch(`/get-project-reports`)
             .then(response => response.json())
             .then(data => {
                 reportSelect.innerHTML = '';
+                
                 if (data.length === 0) {
                     const emptyOption = document.createElement('option');
-                    emptyOption.textContent = 'No reports found';
+                    emptyOption.textContent = 'No reports found for this project';
                     emptyOption.disabled = true;
                     emptyOption.selected = true;
                     reportSelect.appendChild(emptyOption);
                     return;
                 }
 
-                // Сортировка отчетов по убыванию времени (самые свежие — первыми)
-                data.sort((a, b) => {
-                    const tsA = a.timestamp?.replace('_', '') || '';
-                    const tsB = b.timestamp?.replace('_', '') || '';
-                    return tsB.localeCompare(tsA);
-                });
-
                 data.forEach(report => {
                     const option = document.createElement('option');
-                    const timestamp = report.timestamp || '';
-                    const formattedDate = formatTimestamp(timestamp);
-                    const projectName = report.project_name || 'Unnamed project';
+                    
+                    const dateObj = new Date(report.datetime_iso);
+                    const formattedDate = dateObj.toLocaleString(); 
+                    
+                    const modelsStr = report.models && report.models.length > 0 
+                        ? ` (${report.models.length} models)` 
+                        : '';
+
                     const filename = report.filename;
                     const dirname = report.dirname || '';
 
                     option.value = `${dirname}|${filename}`;
-                    option.textContent = `${projectName} — ${formattedDate}`;
+                    option.textContent = `${formattedDate}${modelsStr}`;
+                    
                     reportSelect.appendChild(option);
                 });
+                
+                // Открываем панель только после успешной загрузки
+                window.openModal('select-report-panel');
+                setTimeout(() => { selectReportPanel.classList.add('active'); }, 10);
             })
             .catch(error => {
-                showMessageBox("Failed to load reports 🥲<br>Error details: " + error, "error");
+                showMessageBox("Failed to load reports 🥲", "error");
                 console.error('Failed to load reports:', error);
             });
-
-        selectReportPanel.classList.add('active');
     })
 
     closeSelectReportPanelBtn.addEventListener('click', function () {
