@@ -1,7 +1,5 @@
-import logging
 import math
 import os, json, glob
-
 import urllib
 from config import UPLOADS_DIR, FRAMES_DIR, OBJECT_DETECTIONS_DIR
 
@@ -30,6 +28,10 @@ class ProjectManager:
             return []
             
         for folder_name in os.listdir(self.root_dir):
+            folder_path = os.path.join(self.root_dir, folder_name)
+            if not os.path.isdir(folder_path):
+                continue
+
             data = self.load_metadata(folder_name)
             if data:
                 projects.append({
@@ -45,8 +47,8 @@ class ProjectManager:
         """
         Возвращает порцию кадров и метаданные пагинации.
         """
-        project_path = self.get_project_path(project_folder_name) # Твой метод получения пути
-        frames_dir = os.path.join(project_path, FRAMES_DIR) # FRAMES_DIR из конфига
+        project_path = self.get_project_path(project_folder_name)
+        frames_dir = os.path.join(project_path, FRAMES_DIR)
         annotations_dir = os.path.join(project_path, OBJECT_DETECTIONS_DIR)
 
         if not os.path.exists(frames_dir):
@@ -57,57 +59,34 @@ class ProjectManager:
                 'current_page': page
             }
 
-        # 1. Получаем список всех файлов (это быстро, пока их не миллион)
-        # Сортировка обязательна, чтобы порядок кадров не скакал!
         all_frames = sorted(glob.glob(os.path.join(frames_dir, '*.jpg')))
         total_frames = len(all_frames)
         
-        # 2. Вычисляем индексы для среза (slice)
         start = (page - 1) * per_page
         end = start + per_page
         
-        # Берем только нужный кусочек списка
         frames_slice = all_frames[start:end]
-
         frames_data = []
 
-        # 3. Обрабатываем только этот маленький кусочек (50 штук)
         for i, frame_path in enumerate(frames_slice):
-            # Реальный индекс кадра во всем видео
             global_frame_index = start + i 
             
             frame_name = os.path.basename(frame_path)
             annotation_path = os.path.join(annotations_dir, frame_name.replace('.jpg', '.txt'))
             
-            annotations = []
-            if os.path.exists(annotation_path):
-                try:
-                    with open(annotation_path, 'r') as f:
-                        for line in f:
-                            parts = line.strip().rsplit(' ', 5)
-                            if len(parts) == 6:
-                                label = parts[0]
-                                x, y, w, h, c = map(float, parts[1:])
-                                annotations.append({
-                                    'label': label, 'x': x, 'y': y, 
-                                    'width': w, 'height': h, 'confidence': c
-                                })
-                except Exception as e:
-                    logging.error(f"Error reading {annotation_path}: {e}")
+            # Используем общий метод парсинга
+            annotations = self._parse_annotation_file(annotation_path)
 
-            # Формируем URL (тут используем твою логику)
-            # Важно: project_folder_name должен быть безопасным для URL
             rel_path = os.path.relpath(frame_path, UPLOADS_DIR)
             frame_url = '/uploads/' + urllib.parse.quote(rel_path.replace(os.sep, "/"))
 
             frames_data.append({
-                'frame_index': global_frame_index, # Важно передать реальный индекс!
+                'frame_index': global_frame_index,
                 'name': frame_name,
                 'url': frame_url,
                 'annotations': annotations
             })
 
-        # Возвращаем структуру с данными и мета-инфой для фронтенда
         return {
             'frames': frames_data,
             'pagination': {
@@ -118,4 +97,102 @@ class ProjectManager:
                 'has_next': end < total_frames
             }
         }
+
+    def save_annotations(self, project_folder_name, frames_data):
+        """
+        Сохраняет аннотации в TXT файлы YOLO формата.
+        frames_data: список объектов {frame_index, annotations}
+        """
+        project_path = self.get_project_path(project_folder_name)
+        annotations_dir = os.path.join(project_path, OBJECT_DETECTIONS_DIR)
+        
+        if not os.path.exists(annotations_dir):
+            os.makedirs(annotations_dir)
+
+        for frame_item in frames_data:
+            frame_index = frame_item.get('frame_index')
+            annotations = frame_item.get('annotations', [])
+            
+            file_name = f'frame_{frame_index:06d}.txt'
+            file_path = os.path.join(annotations_dir, file_name)
+            
+            with open(file_path, 'w', encoding='utf-8') as f:
+                for ann in annotations:
+                    # YOLO format: class x y w h conf
+                    label = ann.get('label', 'unknown')
+                    x = ann.get('x', 0)
+                    y = ann.get('y', 0)
+                    w = ann.get('width', 0)
+                    h = ann.get('height', 0)
+                    c = ann.get('confidence', 1.0)
+                    
+                    line = f"{label} {x} {y} {w} {h} {c}\n"
+                    f.write(line)
+    # =========================================================================
+
+    def get_frame_annotations(self, project_folder_name, frame_index):
+        """Получает только Ground Truth для конкретного кадра"""
+        project_path = self.get_project_path(project_folder_name)
+        ann_path = os.path.join(project_path, OBJECT_DETECTIONS_DIR, f'frame_{frame_index:06d}.txt')
+        return self._parse_annotation_file(ann_path)
     
+    def get_all_frame_annotations(self, project_folder_name, frame_index):
+        """
+        Получает Ground Truth и предсказания всех моделей для конкретного кадра.
+        """
+        project_path = self.get_project_path(project_folder_name)
+        frame_filename = f'frame_{frame_index:06d}.txt'
+        
+        # 1. Получаем Ground Truth (Ручная разметка)
+        gt_path = os.path.join(project_path, OBJECT_DETECTIONS_DIR, frame_filename)
+        ground_truth = self._parse_annotation_file(gt_path)
+        
+        # 2. Получаем предсказания моделей
+        models_result = {}
+        analysis_base_path = os.path.join(project_path, ANALYSIS_DIR)
+        
+        if os.path.exists(analysis_base_path):
+            for model_name in os.listdir(analysis_base_path):
+                model_dir_path = os.path.join(analysis_base_path, model_name)
+                
+                if os.path.isdir(model_dir_path):
+                    model_ann_path = os.path.join(model_dir_path, frame_filename)
+                    models_result[model_name] = self._parse_annotation_file(model_ann_path)
+
+        return {
+            'ground_truth': ground_truth,
+            'models': models_result
+        }
+    
+    def _parse_annotation_file(self, file_path):
+        """
+        Внутренний метод: парсит YOLO txt файл и возвращает список словарей.
+        """
+        annotations = []
+        if not os.path.exists(file_path):
+            return annotations
+
+        try:
+            with open(file_path, 'r', encoding='utf-8') as f:
+                for line in f:
+                    line = line.strip()
+                    if not line:
+                        continue
+                    
+                    parts = line.split()
+                    label = ' '.join(parts[:-5])
+                    
+                    try:
+                        x, y, w, h, c = map(float, parts[-5:])
+                        annotations.append({
+                            'label': label,
+                            'x': x, 'y': y, 
+                            'width': w, 'height': h, 
+                            'confidence': c
+                        })
+                    except ValueError:
+                        print(f"Error parsing coordinates in line: {line}")
+        except Exception as e:
+            print(f"Error reading {file_path}: {e}")
+            
+        return annotations

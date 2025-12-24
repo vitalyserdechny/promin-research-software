@@ -8,7 +8,7 @@
 import base64
 import datetime, json, logging, torch
 import shutil
-import glob, os, threading, re, urllib.parse
+import glob, os, threading, re
 
 from utils import *
 from flask import Flask, jsonify, render_template, request, redirect, send_from_directory
@@ -72,33 +72,9 @@ def index():
     Index Route
     \nThis route serves the main page of the application, listing all projects and their metadata.
     '''
-    projects = []
-    if os.path.exists(UPLOADS_DIR):
-        for folder_name in os.listdir(UPLOADS_DIR):
-            folder_path = os.path.join(UPLOADS_DIR, folder_name)
-            if os.path.isdir(folder_path):
-                project_file = os.path.join(folder_path, 'project.json')
-                if os.path.exists(project_file):
-                    try:
-                        with open(project_file, 'r', encoding='utf-8') as f:
-                            data = json.load(f)
-                            project_name = data.get('project_name', 'Unnamed Project')
-                            created_at = data.get('created_at')
-                    except Exception as e:
-                        project_name = 'Reading error'
-                        logging.error(f'Project name reading error {project_file}: {e}')
-                else:
-                    project_name = 'project.json not found'
-                
-                projects.append({
-                    'folder': folder_name,
-                    'name': project_name,
-                    'created_at': created_at
-                })
-
-    projects.sort(key=lambda x: x['created_at'] or '', reverse=True)
+    projects = project_manager.get_all_projects()
     app.config['PROJECTS_INFO'] = projects
-    return render_template('index.html')
+    return render_template('index.html', projects=projects)
 
 @app.route("/ping", methods=['GET'])
 def ping():
@@ -106,7 +82,7 @@ def ping():
 
 @app.route('/get-projects')
 def get_projects():
-    return jsonify(app.config['PROJECTS_INFO'])
+    return jsonify(project_manager.get_all_projects())
 
 @app.route('/close-project')
 def close_project():
@@ -373,82 +349,19 @@ def initialize_playground():
 def get_frame_annotations():
     '''
     Get all frames annotations for a specific frame (including ground truth and model predictions)
-    \nWARNING: model predictions are available only after running analysis!
     '''
     frame_index = request.args.get('frame_index', type=int)
-    frame_name = f'frame_{frame_index:06d}.txt'
+    if frame_index is None:
+        return jsonify({'error': 'frame_index is required'}), 400
 
-    annotations_folder = os.path.join(app.config['CURRENT_PROJECT_DIR'], OBJECT_DETECTIONS_DIR)
-    analysis_base_path = os.path.join(app.config['CURRENT_PROJECT_DIR'], ANALYSIS_DIR)
+    current_project_path = app.config.get('CURRENT_PROJECT_DIR')
+    if not current_project_path:
+        return jsonify({'error': 'No project open'}), 400
     
-    analysis_folders = []
-    if os.path.exists(analysis_base_path):
-        analysis_folders = [f for f in os.listdir(analysis_base_path) 
-                           if os.path.isdir(os.path.join(analysis_base_path, f))]
-
-    truth_annotation_path = os.path.join(annotations_folder, frame_name)
-
-    result = {
-        'ground_truth': [],
-        'models': {}
-    }
-
-    if os.path.exists(truth_annotation_path):
-        try:
-            with open(truth_annotation_path, 'r') as f:
-                for line in f:
-                    line = line.strip()
-                    if not line:
-                        continue
-                    
-                    parts = line.split()
-                    label = ' '.join(parts[:-5])
-                    try:
-                        x, y, w, h, c = map(float, parts[-5:])
-                        result['ground_truth'].append({
-                            'label': label,
-                            'x': x,
-                            'y': y,
-                            'width': w,
-                            'height': h,
-                            'confidence': c
-                        })
-                    except ValueError:
-                        logging.error(f"Error parsing coordinates in line: {line}")
-        except Exception as e:
-            logging.error(f"Error reading {truth_annotation_path}: {e}")
+    project_folder_name = os.path.basename(current_project_path)
     
-    for model_name in analysis_folders:
-        model_annotation_path = os.path.join(analysis_base_path, model_name, frame_name)
-        model_annotations = []
-        
-        if os.path.exists(model_annotation_path):
-            try:
-                with open(model_annotation_path, 'r') as f:
-                    for line in f:
-                        line = line.strip()
-                        if not line:
-                            continue
-                            
-                        parts = line.split()
-                        label = ' '.join(parts[:-5])
-                        try:
-                            x, y, w, h, c = map(float, parts[-5:])
-                            model_annotations.append({
-                                'label': label,
-                                'x': x,
-                                'y': y,
-                                'width': w,
-                                'height': h,
-                                'confidence': c
-                            })
-                        except ValueError:
-                            logging.error(f"Error parsing coordinates in line: {line} for model {model_name}")
-            except Exception as e:
-                logging.error(f"Error reading {model_annotation_path}: {e}")
-        
-        result['models'][model_name] = model_annotations
-
+    result = project_manager.get_all_frame_annotations(project_folder_name, frame_index)
+    
     return jsonify(result)
 
 
@@ -550,27 +463,19 @@ def save_project_data():
 @app.route("/save-annotations", methods=["POST"])
 def save_annotations():
     data = request.get_json()
-    for frame_data in data:
-        frame_index = frame_data["frame_index"]
-        annotations = frame_data["annotations"]
-
-        annotations_folder = os.path.join(app.config['CURRENT_PROJECT_DIR'], OBJECT_DETECTIONS_DIR)
-        if not os.path.exists(annotations_folder):
-            os.makedirs(annotations_folder)
-
-        annotation_path = os.path.join(annotations_folder, f'frame_{frame_index:06d}.txt')
-
-        with open(annotation_path, 'w') as f:
-            for annotation in annotations:
-                x = annotation['x']
-                y = annotation['y']
-                w = annotation['width']
-                h = annotation['height']
-                c = annotation['confidence']
-                label = annotation['label']
-                f.write(f'{label} {x} {y} {w} {h} {c}\n')
     
-    return jsonify({'message': 'Annotations saved successfully!'})
+    current_path = app.config.get('CURRENT_PROJECT_DIR')
+    if not current_path:
+        return jsonify({'error': 'No project open'}), 400
+        
+    project_folder = os.path.basename(current_path)
+    
+    try:
+        project_manager.save_annotations(project_folder, data)
+        return jsonify({'message': 'Annotations saved successfully!'})
+    except Exception as e:
+        logging.error(f"Save error: {e}")
+        return jsonify({'error': str(e)}), 500
 
 @app.route('/get-last-frame-and-page-number')
 def get_last_frame_and_page_number():
