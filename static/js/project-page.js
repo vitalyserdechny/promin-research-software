@@ -64,55 +64,7 @@ document.addEventListener("DOMContentLoaded", function () {
         closeViewReportBtn.addEventListener('click', () => window.closeModal('view-report-panel'));
     }
 
-    // --- 2. SAVE PROJECT LOGIC ---
-    const saveProjectButton = document.getElementById("save-project-btn");
-    if (saveProjectButton) {
-        saveProjectButton.addEventListener("click", async function (e) {
-            e.preventDefault();
-            
-            if (typeof allFrames === 'undefined') {
-                alert("Error: Project data missing!");
-                return;
-            }
-
-            const annotationsData = allFrames.map(frame => ({
-                frame_index: frame.frame_index,
-                annotations: frame.annotations
-            }));
-
-            const projectData = {
-                classes_and_colors: window.classesAndColors || {},
-                last_frame_index: window.currentFrameIndex || 0,
-                page_number: window.currentPage || 1
-            };
-
-            try {
-                const [annotResponse, metaResponse] = await Promise.all([
-                    fetch("/save-annotations", {
-                        method: "POST",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify(annotationsData)
-                    }),
-                    fetch("/save-project-data", {
-                        method: "POST",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify(projectData)
-                    })
-                ]);
-
-                if (annotResponse.ok && metaResponse.ok) {
-                    showMessageBox("Project saved! 💾", "success");
-                } else {
-                    showMessageBox("Error saving data", "error");
-                }
-            } catch (error) {
-                console.error(error);
-                showMessageBox("Network error", "error");
-            }
-        });
-    }
-
-    // --- 3. UTILITIES ---
+    // --- 2. UTILITIES ---
     const cudaStatusBtn = document.getElementById('cuda_status_btn');
     if (cudaStatusBtn) {
         cudaStatusBtn.addEventListener('click', function (e) {
@@ -132,7 +84,7 @@ document.addEventListener("DOMContentLoaded", function () {
         closeProjectButton.addEventListener("click", function (e) {
             e.preventDefault();
             const action = () => window.location.href = "/close-project";
-            showConfirmBox("Close project? Unsaved changes may be lost.", (yes) => { if(yes) action(); });
+            showConfirmBox("Close this project?", (yes) => { if(yes) action(); });
         });
     }
 });

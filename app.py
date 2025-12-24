@@ -16,6 +16,8 @@ from flask_socketio import SocketIO
 
 from config import *
 from preproc import init_nn_processors
+
+from services.project_manager import *
 # ---------------------------------------------------------------------------------------
 
 # 2. FLASK Application & Socket Setup 
@@ -24,6 +26,8 @@ app = Flask(__name__)
 socketio = SocketIO(app)
 app.config['CURRENT_PROJECT_DIR'] = None
 app.config['PROJECTS_INFO'] = None
+
+project_manager = ProjectManager(UPLOADS_DIR)
 # ---------------------------------------------------------------------------------------
 
 # 3. Helper Functions
@@ -603,52 +607,21 @@ def get_classes_colors():
 
 @app.route('/get-frames')
 def get_frames():
-    frames_folder = os.path.join(app.config['CURRENT_PROJECT_DIR'], FRAMES_DIR)
-    annotations_folder = os.path.join(app.config['CURRENT_PROJECT_DIR'], OBJECT_DETECTIONS_DIR)
+    page = request.args.get('page', 1, type=int)
+    per_page = request.args.get('per_page', 50, type=int)
 
-    if not os.path.exists(frames_folder):
-        return jsonify([])
+    current_project_path = app.config.get('CURRENT_PROJECT_DIR')
+    if not current_project_path:
+        return jsonify({'frames': [], 'pagination': {}}), 400
+    
+    project_folder_name = os.path.basename(current_project_path)
+    result = project_manager.get_frames_paginated(
+        project_folder_name, 
+        page=page, 
+        per_page=per_page
+    )
 
-    frame_files = sorted(glob.glob(os.path.join(frames_folder, '*.jpg')))
-    frames_data = []
-
-    frame_index = 0
-    for frame_path in frame_files:
-        frame_name = os.path.basename(frame_path)
-        annotation_path = os.path.join(annotations_folder, frame_name.replace('.jpg', '.txt'))
-
-        annotations = []
-        if os.path.exists(annotation_path):
-            try:
-                with open(annotation_path, 'r') as f:
-                    for line in f:
-                        parts = line.strip().rsplit(' ', 5)  
-                        if len(parts) == 6:
-                            label = parts[0] 
-                            x, y, w, h, c = map(float, parts[1:])  
-                            annotations.append({
-                                'label': label,
-                                'x': x,
-                                'y': y,
-                                'width': w,
-                                'height': h,
-                                'confidence': c
-                            })
-                        else:
-                            logging.warning(f"Skipping malformed annotation: {line}")
-            except Exception as e:
-                logging.error(f"Error reading {annotation_path}: {e}")
-
-        frame_url = '/uploads/' + urllib.parse.quote(os.path.relpath(frame_path, UPLOADS_DIR).replace(os.sep, "/"))
-
-        frames_data.append({
-            'frame_index' : frame_index,
-            'url': frame_url,
-            'annotations': annotations
-        })
-        frame_index += 1
-
-    return jsonify(frames_data)
+    return jsonify(result)
 
 @app.route('/open')
 def open_project():

@@ -28,12 +28,14 @@
 
     <header>
         <div class="logo">PROMIN</div>
+        <div id="autosave-status" class="autosave-indicator">
+            ☁️ All changes saved
+        </div>
         <nav class="navbar">
             <ul class="nav-menu">
                 <li class="nav-item dropdown">
                     <a href="#">🗂️ Project ▾</a>
                     <ul class="dropdown-menu">
-                        <li><a href="#" id="save-project-btn">💾 Save</a></li>
                         <li><a href="#" id="close-project-btn">🔴 Close</a></li>
                     </ul>
                 </li>
@@ -296,6 +298,7 @@
 
     <script src="../static/js/messagebox.js"></script>
     <script src="../static/js/utils.js"></script>
+    <script src="../static/js/autosave-manager.js"></script>
     <script src="../static/js/bounding-boxes.js"></script>
     <script src="../static/js/frames-rendering.js"></script>
     <script src="../static/js/classes-and-colors.js"></script>

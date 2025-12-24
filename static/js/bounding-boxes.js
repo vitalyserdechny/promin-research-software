@@ -208,6 +208,8 @@ function deleteObjectByIndex(index) {
 
         drawBoundingBoxes(frameData.annotations);
         updateBoundingBoxList(frameData.annotations);
+
+        AutoSaveManager.saveCurrentFrame();
     });
 }
 
@@ -305,6 +307,7 @@ function stopResize() {
     const frameData = allFrames.find(f => f.frame_index === frameIndex);
     drawBoundingBoxes(frameData.annotations);
     updateBoundingBoxList(frameData.annotations);
+    AutoSaveManager.saveCurrentFrame()
 }
 
 // ==========================================================
@@ -376,6 +379,8 @@ function stopMove() {
     const frameIndex = parseInt(document.getElementById("frame-number").textContent);
     const frameData = allFrames.find(f => f.frame_index === frameIndex);
     updateBoundingBoxList(frameData.annotations);
+
+    AutoSaveManager.saveCurrentFrame();
 }
 
 // ==========================================================
@@ -420,6 +425,8 @@ document.addEventListener("DOMContentLoaded", function () {
                 frameData.annotations.push(newAnnotation);
                 drawBoundingBoxes(frameData.annotations);
                 updateBoundingBoxList(frameData.annotations);
+
+                AutoSaveManager.saveCurrentFrame()
             }
         }
     });
@@ -448,6 +455,8 @@ document.addEventListener("DOMContentLoaded", function () {
                     frameData.annotations.push(newAnnotation);
                     drawBoundingBoxes(frameData.annotations);
                     updateBoundingBoxList(frameData.annotations);
+
+                    AutoSaveManager.saveCurrentFrame();
                 }
             }
         });
@@ -487,6 +496,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
                         drawBoundingBoxes(frameData.annotations);
                         updateBoundingBoxList(frameData.annotations);
+
+                        AutoSaveManager.saveCurrentFrame();
                     }
                 }
                 hideContextMenu();
@@ -512,6 +523,8 @@ document.addEventListener("DOMContentLoaded", function () {
             drawBoundingBoxes(frameData.annotations);
             updateBoundingBoxList(frameData.annotations);
             hideContextMenu();
+
+            AutoSaveManager.saveCurrentFrame();
         });
     }
 
@@ -534,6 +547,7 @@ document.addEventListener("DOMContentLoaded", function () {
             if (contextMenuTargetIndex === null) return;
             deleteObjectByIndex(contextMenuTargetIndex);
             hideContextMenu();
+            AutoSaveManager.saveCurrentFrame();
         });
     }
 });
