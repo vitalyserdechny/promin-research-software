@@ -204,6 +204,7 @@ function deleteObjectByIndex(index) {
         if (labelOccurences === 0) {
             delete window.classesAndColors[label];
             displayClassesAndColors(window.classesAndColors);
+            AutoSaveManager.saveMetadata();
         }
 
         drawBoundingBoxes(frameData.annotations);
@@ -445,6 +446,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     if (!window.classesAndColors[label.trim()]) {
                         window.classesAndColors[label.trim()] = [Math.floor(Math.random() * 256), Math.floor(Math.random() * 256), Math.floor(Math.random() * 256)];
                         displayClassesAndColors(window.classesAndColors);
+                        AutoSaveManager.saveMetadata();
                     }
 
                     const newAnnotation = {
@@ -485,6 +487,7 @@ document.addEventListener("DOMContentLoaded", function () {
                         if (!window.classesAndColors[newLabel]) {
                             window.classesAndColors[newLabel] = [Math.floor(Math.random() * 256), Math.floor(Math.random() * 256), Math.floor(Math.random() * 256)];
                             displayClassesAndColors(window.classesAndColors);
+                            AutoSaveManager.saveMetadata();
                         }
                         
                         // Cleanup old color if unused
@@ -492,6 +495,7 @@ document.addEventListener("DOMContentLoaded", function () {
                         if (labelOccurences === 0) {
                             delete window.classesAndColors[oldLabel];
                             displayClassesAndColors(window.classesAndColors);
+                            AutoSaveManager.saveMetadata();
                         }
 
                         drawBoundingBoxes(frameData.annotations);

@@ -1,5 +1,7 @@
+import logging
 import math
 import os, json, glob
+import re
 import urllib
 from config import UPLOADS_DIR, FRAMES_DIR, OBJECT_DETECTIONS_DIR, ANALYSIS_DIR
 
@@ -231,3 +233,50 @@ class ProjectManager:
         # Сортируем: свежие сверху
         reports.sort(key=lambda x: x['timestamp'] or '', reverse=True)
         return reports
+    
+    def get_class_statistics(self, project_folder_name, target_class):
+        """
+        Сканирует все аннотации проекта и собирает статистику по конкретному классу.
+        Возвращает: общее кол-во и список кадров, где этот класс встречается.
+        """
+        project_path = self.get_project_path(project_folder_name)
+        annotations_dir = os.path.join(project_path, OBJECT_DETECTIONS_DIR)
+        
+        if not os.path.exists(annotations_dir):
+            return {'total_count': 0, 'frames': []}
+
+        total_count = 0
+        frames_with_class = []
+
+        # Получаем все .txt файлы
+        annotation_files = sorted(glob.glob(os.path.join(annotations_dir, '*.txt')))
+
+        for file_path in annotation_files:
+            try:
+                count_in_frame = 0
+                with open(file_path, 'r', encoding='utf-8') as f:
+                    for line in f:
+                        parts = line.strip().split()
+                        if len(parts) >= 5:
+                            label_in_line = ' '.join(parts[:-5])
+                            if label_in_line == target_class:
+                                count_in_frame += 1
+                
+                if count_in_frame > 0:
+                    total_count += count_in_frame
+                    filename = os.path.basename(file_path)
+                    frame_index = int(re.search(r'\d+', filename).group())
+                    
+                    frames_with_class.append({
+                        'frame_index': frame_index,
+                        'count': count_in_frame
+                    })
+
+            except Exception as e:
+                logging.error(f"Error scanning file {file_path}: {e}")
+
+        return {
+            'class_name': target_class,
+            'total_objects': total_count,
+            'frames': frames_with_class
+        }

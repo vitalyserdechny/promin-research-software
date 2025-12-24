@@ -292,6 +292,33 @@
         </div>
     </div>
 
+    <div id="class-details-modal" class="glass-panel medium-panel">
+        <div class="panel-header">
+            <h2>Class Details 🧐</h2>
+            <button id="close-class-details-btn" class="close-btn">×</button>
+        </div>
+        <div class="panel-content scrollable">
+            <div class="class-summary-header">
+                <div id="modal-class-badge" class="class-tag" style="margin: 0 auto 20px; width: fit-content;">
+                    </div>
+                <div class="stats-row">
+                    <div class="stat-box">
+                        <span class="stat-num" id="modal-total-objects">0</span>
+                        <span class="stat-label">Total Objects</span>
+                    </div>
+                    <div class="stat-box">
+                        <span class="stat-num" id="modal-total-frames">0</span>
+                        <span class="stat-label">Frames Involved</span>
+                    </div>
+                </div>
+            </div>
+
+            <h3>Frames with this object</h3>
+            <div id="class-frames-list" class="class-frames-grid">
+                </div>
+        </div>
+    </div>
+
     <script src="https://unpkg.com/@dotlottie/player-component@2.7.12/dist/dotlottie-player.mjs" type="module"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.socket.io/4.0.1/socket.io.min.js"></script>

@@ -146,8 +146,7 @@ def annotate_frame(frame, detector, output_annotations_dir, all_classes, preproc
     results, pr_time = detector.detect(img)
 
     annotations, classes = detector.results_to_yolov8_f(results, img)
-    if all_classes:
-        all_classes.update(classes) 
+    all_classes.update(classes) 
 
     frame_name = os.path.basename(frame)
     annotation_file = os.path.join(output_annotations_dir, frame_name.replace('.jpg', '.txt'))

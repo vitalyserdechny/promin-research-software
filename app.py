@@ -571,6 +571,21 @@ def upload_video():
     threading.Thread(target=process_video, args=(project_folder, is_annontation_required, )).start()
     return render_template('video-processing.html', message=f'File {filename} uploaded successfully', project_name=project_name_raw)
 
+@app.route('/get-class-stats', methods=['GET'])
+def get_class_stats_route():
+    class_name = request.args.get('class_name')
+    if not class_name:
+        return jsonify({'error': 'class_name required'}), 400
+
+    current_path = app.config.get('CURRENT_PROJECT_DIR')
+    if not current_path:
+        return jsonify({'error': 'No project open'}), 400
+        
+    project_folder = os.path.basename(current_path)
+    
+    stats = project_manager.get_class_statistics(project_folder, class_name)
+    return jsonify(stats)
+
 # -------------------------------------------------------------------------
 # 5. Main Application Logic
 
