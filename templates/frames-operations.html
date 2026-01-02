@@ -96,10 +96,11 @@
 
     <div id="playground-panel" class="glass-panel large-panel">
         <div class="panel-header">
-            <h2>Playground 🎮 <span style="font-size: 0.6em; opacity: 0.6; font-weight: normal;">Experimental Zone</span></h2>
+            <h2>Playground 🎮 <span style="font-size: 0.6em; opacity: 0.6; font-weight: normal;">Experimental
+                    Zone</span></h2>
             <button id="close-playground-panel-btn" class="close-btn">×</button>
         </div>
-        
+
         <div class="panel-content" style="padding: 0; overflow: hidden;">
             <div class="playground-layout">
                 <div class="playground-stage">
@@ -107,9 +108,18 @@
                         <img src="" alt="Playground Frame" id="playground-frame-image">
                         <div id="playground-bounding-boxes"></div>
                     </div>
-                    
+
                     <div class="playground-toolbar">
-                        <button class="tool-btn" onclick="document.getElementById('playground-command-input').value='reset all'; document.getElementById('playground-command-input').focus();">↺ Reset</button>
+                        <button class="tool-btn"
+                            onclick="document.getElementById('playground-command-input').value='reset all'; document.getElementById('playground-command-input').focus();">↺
+                            Reset</button>
+
+                        <span class="tool-info"
+                            style="margin-left: 20px; border-left: 1px solid #ddd; padding-left: 20px;">
+                            Cursor: <span id="playground-cursor-coords"
+                                style="font-weight: bold; color: #333;">--</span>
+                        </span>
+
                         <span class="tool-info">Frame #<span id="playground-frame-number">--</span></span>
                     </div>
                 </div>
@@ -126,7 +136,8 @@
                     </div>
                     <div class="terminal-input-area">
                         <span class="prompt-sign">❯</span>
-                        <input type="text" id="playground-command-input" placeholder="Enter command (e.g. 'preproc median k=5')..." autocomplete="off">
+                        <input type="text" id="playground-command-input"
+                            placeholder="Enter command (e.g. 'preproc median k=5')..." autocomplete="off">
                     </div>
                 </div>
             </div>
@@ -318,7 +329,7 @@
         <div class="panel-content scrollable">
             <div class="class-summary-header">
                 <div id="modal-class-badge" class="class-tag" style="margin: 0 auto 20px; width: fit-content;">
-                    </div>
+                </div>
                 <div class="stats-row">
                     <div class="stat-box">
                         <span class="stat-num" id="modal-total-objects">0</span>
@@ -333,13 +344,13 @@
 
             <h3>Frames with this object</h3>
             <div id="class-frames-list" class="class-frames-grid">
-                </div>
+            </div>
         </div>
     </div>
 
     <div id="color-picker-popover" class="color-popover hidden">
         <div class="color-grid" id="color-swatches">
-            </div>
+        </div>
         <div class="color-popover-footer">
             <label for="custom-color-input" class="custom-color-label">Custom...</label>
             <input type="color" id="custom-color-input">

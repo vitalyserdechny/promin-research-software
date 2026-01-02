@@ -146,6 +146,8 @@ document.addEventListener("DOMContentLoaded", function () {
     const playgroundInput = document.getElementById("playground-command-input");
     const closePlaygroundPanelBtn = document.getElementById('close-playground-panel-btn');
     const img = document.getElementById('playground-frame-image');
+    const playgroundImg = document.getElementById('playground-frame-image');
+    const coordsLabel = document.getElementById('playground-cursor-coords');
 
     // История команд в консоли Playground
     let commandHistory = [];
@@ -153,6 +155,40 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // История команд препроцессинга
     let preprocHistory = [];
+
+    playgroundImg.addEventListener('mousemove', function(e) {
+        // Размеры отображаемого элемента
+        const rect = playgroundImg.getBoundingClientRect();
+        
+        // Координаты курсора внутри элемента
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+
+        // Реальные размеры изображения
+        const naturalW = playgroundImg.naturalWidth;
+        const naturalH = playgroundImg.naturalHeight;
+
+        // Текущие размеры элемента
+        const displayW = playgroundImg.width;
+        const displayH = playgroundImg.height;
+
+        // Масштабирование координат
+        if (displayW > 0 && displayH > 0) {
+            const realX = Math.round((x / displayW) * naturalW);
+            const realY = Math.round((y / displayH) * naturalH);
+
+            // Обновляем текст в тулбаре
+            // Формат: X=123 Y=456
+            coordsLabel.textContent = `X=${realX} Y=${realY}`;
+            
+            // Опционально: можно сделать так, чтобы при клике эти координаты
+            // копировались в буфер или вставлялись в инпут
+        }
+    });
+
+    playgroundImg.addEventListener('mouseleave', function() {
+        coordsLabel.textContent = '--';
+    });
 
     // Обработчик клика по кнопке "Playground"
     enterPlaygroundBtn.addEventListener('click', function () {

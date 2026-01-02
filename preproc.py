@@ -1,5 +1,6 @@
 import cv2
 import numpy as np
+import depth
 
 from neural_models.zerodce.zerodce import ZeroDCEProcessor
 
@@ -362,6 +363,27 @@ def apply_preproc(frame, preproc_method, **params):
 
         dehazed_frame = dehaze(frame_color, window_size, omega, t0, atmospheric_light_top_percent)
         return dehazed_frame, final_params
+    # *****************************
+    # SPECIAL: DEHAZE & DEPTH
+    # *****************************
+    elif preproc_method == "dcp":
+        ws = int(params.get('window_size', 15))
+        om = float(params.get('omega', 0.95))
+        t0 = float(params.get('t0', 0.1))
+        # Проверка на цветное изображение
+        if len(frame.shape) < 3: frame = cv2.cvtColor(frame, cv2.COLOR_GRAY2BGR)
+        
+        res = dehaze(frame, ws, om, t0)
+        return res, {"window_size": ws, "omega": om}
+    # Делегируем вызовы глубины в модуль depth.py
+    elif preproc_method == "depth_dcp":
+        if not depth.depth_models_initialized:
+            depth.init_depth_models()
+        return depth.apply_depth_dcp(frame, **params)      
+    elif preproc_method == "depth_midas":
+        if not depth.depth_models_initialized:
+            depth.init_depth_models()
+        return depth.apply_depth_midas(frame, **params)
     else:
         raise ValueError(f"Unsupported preprocessing method: {preproc_method}")
 
